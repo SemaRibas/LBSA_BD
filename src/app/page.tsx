@@ -218,28 +218,32 @@ export default function DashboardPage() {
         {/* Hero Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Main metric card */}
-          <Card variant="gradient" className="lg:col-span-2 text-white">
-            <div className="flex items-start justify-between">
+          <Card variant="gradient" className="lg:col-span-2 text-white relative overflow-hidden p-6 sm:p-8">
+            <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-teal-100 text-sm mb-1 font-medium">Materiais Cadastrados</p>
-                <p className="text-5xl font-bold mb-2">{metrics.totalMateriais}</p>
-                <div className="flex items-center gap-4 text-sm">
-                  <span className="flex items-center gap-1.5 font-medium">
-                    <span className="w-2.5 h-2.5 rounded-full bg-green-400 shadow-sm" />
-                    {metrics.materiaisConservados} Conservados
-                  </span>
-                  <span className="flex items-center gap-1.5 font-medium">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-sm" />
-                    {metrics.totalMateriais - metrics.materiaisConservados} Outros
-                  </span>
-                </div>
+                <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-white/15 backdrop-blur-md text-teal-100 border border-white/20 mb-2">
+                  Acervo Biológico
+                </span>
+                <h3 className="text-teal-100 text-sm font-medium">Materiais Cadastrados</h3>
+                <p className="text-4xl sm:text-5xl font-black text-white tracking-tight my-1">
+                  {metrics.totalMateriais}
+                </p>
               </div>
-              <div className="w-24 h-24 opacity-20">
-                <svg viewBox="0 0 100 100" fill="currentColor">
-                  <circle cx="50" cy="30" r="15" />
-                  <path d="M25 85 C25 55 75 55 75 85" />
-                  <rect x="35" y="60" width="30" height="25" rx="5" />
-                </svg>
+              <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shrink-0 shadow-inner">
+                <Layers className="h-6 w-6 text-white" />
+              </div>
+            </div>
+
+            {/* Organized Status Pill Badges */}
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 mt-4 pt-3 border-t border-white/15">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/15 backdrop-blur-md border border-white/20 text-xs sm:text-sm font-bold text-white shadow-xs whitespace-nowrap">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                <span>{metrics.materiaisConservados} Conservados</span>
+              </div>
+
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/15 backdrop-blur-md border border-white/20 text-xs sm:text-sm font-bold text-white shadow-xs whitespace-nowrap">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
+                <span>{metrics.totalMateriais - metrics.materiaisConservados} Outros</span>
               </div>
             </div>
           </Card>
