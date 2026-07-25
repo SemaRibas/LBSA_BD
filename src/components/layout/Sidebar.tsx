@@ -79,7 +79,7 @@ const Sidebar = ({ className }: SidebarProps) => {
       <aside
         className={cn(
           "fixed left-0 top-0 h-full w-20 bg-gradient-to-b from-teal-700 to-teal-800",
-          "flex flex-col items-center py-6 z-40",
+          "flex flex-col items-center pt-16 pb-6 lg:py-6 z-40",
           "transition-transform duration-300 ease-in-out",
           "lg:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full",
