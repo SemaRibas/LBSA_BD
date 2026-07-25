@@ -10,16 +10,21 @@ import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { Table } from "@/components/ui/Table";
 import { Modal } from "@/components/ui/Modal";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Select } from "@/components/ui/Select";
 import { Material } from "@/types";
 import { Search, Plus, Download } from "lucide-react";
+import { useToast } from "@/contexts/ToastContext";
 
 export default function InsightsPage() {
   const router = useRouter();
+  const toast = useToast();
   const [materiais, setMateriais] = useState<Material[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
   const [filterEstado, setFilterEstado] = useState<string>("");
 
@@ -52,66 +57,77 @@ export default function InsightsPage() {
       }
     } catch (error) {
       console.error("Erro ao buscar materiais:", error);
+      toast.error("Erro ao carregar", "Não foi possível carregar os materiais.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const filteredMateriais = materiais.filter((material) => {
-    const matchesSearch = material.material.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = !filterEstado || material.estado === filterEstado;
-    return matchesSearch && matchesFilter;
+    const matchesSearch =
+      material.material.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      material.observacoes?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesEstado = !filterEstado || material.estado === filterEstado;
+    return matchesSearch && matchesEstado;
   });
 
   const columns = [
-    { key: "material", label: "Material", sortable: true },
-    { key: "quantidade", label: "Quantidade", sortable: true },
+    {
+      key: "material",
+      label: "Material",
+      sortable: true,
+      render: (row: Material) => (
+        <span className="font-semibold text-surface-900 dark:text-surface-100">
+          {row.material}
+        </span>
+      ),
+    },
+    {
+      key: "quantidade",
+      label: "Quantidade",
+      sortable: true,
+    },
     {
       key: "estado",
       label: "Estado",
       sortable: true,
-      render: (item: Material) => (
-        <Badge
-          variant={
-            item.estado === "Conservado"
-              ? "success"
-              : item.estado === "Danificado"
-              ? "danger"
-              : "warning"
-          }
-        >
-          {item.estado}
-        </Badge>
-      ),
+      render: (row: Material) => {
+        const variants: Record<string, "success" | "warning" | "danger" | "info"> = {
+          Conservado: "success",
+          "Não consta": "warning",
+          Danificado: "danger",
+          Bom: "info",
+        };
+        return (
+          <Badge variant={variants[row.estado] || "default"}>
+            {row.estado}
+          </Badge>
+        );
+      },
     },
-    { key: "validade", label: "Validade" },
-    { key: "observacoes", label: "Observacoes" },
     {
-      key: "actions",
-      label: "",
-      render: (item: Material) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleEdit(item);
-          }}
-        >
-          Editar
-        </Button>
+      key: "validade",
+      label: "Validade",
+    },
+    {
+      key: "observacoes",
+      label: "Observacoes",
+      render: (row: Material) => (
+        <span className="text-surface-600 dark:text-surface-400 truncate max-w-xs block">
+          {row.observacoes || "-"}
+        </span>
       ),
     },
   ];
 
-  const handleEdit = (item: Material) => {
-    setSelectedMaterial(item);
+  const handleEdit = (material: Material) => {
+    setSelectedMaterial(material);
     setFormData({
-      material: item.material,
-      quantidade: item.quantidade,
-      estado: item.estado,
-      validade: item.validade,
-      observacoes: item.observacoes,
+      material: material.material,
+      quantidade: material.quantidade,
+      estado: material.estado,
+      validade: material.validade || "",
+      observacoes: material.observacoes || "",
     });
     setIsModalOpen(true);
   };
@@ -133,7 +149,7 @@ export default function InsightsPage() {
 
     try {
       if (selectedMaterial) {
-        // Atualizar
+        // Editar
         const res = await fetch("/api/materiais", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -143,6 +159,9 @@ export default function InsightsPage() {
         if (res.ok) {
           await fetchMateriais();
           setIsModalOpen(false);
+          toast.success("Material Atualizado!", `Material "${formData.material}" foi alterado com sucesso.`);
+        } else {
+          toast.error("Erro ao salvar", "Não foi possível atualizar o material.");
         }
       } else {
         // Criar
@@ -155,15 +174,20 @@ export default function InsightsPage() {
         if (res.ok) {
           await fetchMateriais();
           setIsModalOpen(false);
+          toast.success("Material Cadastrado!", `Material "${formData.material}" adicionado ao inventário.`);
+        } else {
+          toast.error("Erro ao cadastrar", "Não foi possível cadastrar o material.");
         }
       }
     } catch (error) {
       console.error("Erro ao salvar material:", error);
+      toast.error("Erro no Servidor", "Ocorreu uma falha ao salvar os dados.");
     }
   };
 
-  const handleDelete = async () => {
+  const handleDeleteConfirm = async () => {
     if (!selectedMaterial) return;
+    setIsDeleting(true);
 
     try {
       const res = await fetch(`/api/materiais?id=${selectedMaterial.id}`, {
@@ -172,11 +196,22 @@ export default function InsightsPage() {
 
       if (res.ok) {
         await fetchMateriais();
+        setIsConfirmOpen(false);
         setIsModalOpen(false);
+        toast.success("Material Excluído!", `Material "${selectedMaterial.material}" removido com sucesso.`);
+      } else {
+        toast.error("Erro ao excluir", "Não foi possível excluir o material.");
       }
     } catch (error) {
       console.error("Erro ao deletar material:", error);
+      toast.error("Erro no Servidor", "Falha ao processar a exclusão.");
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const handleExport = () => {
+    toast.info("Exportação em Andamento", "Gerando arquivo de inventário em planilha...");
   };
 
   if (isLoading) {
@@ -238,7 +273,7 @@ export default function InsightsPage() {
                 onChange={setFilterEstado}
               />
             </div>
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleExport}>
               <Download className="h-4 w-4 mr-2" />
               Exportar
             </Button>
@@ -258,7 +293,7 @@ export default function InsightsPage() {
           />
         </Card>
 
-        {/* Modal */}
+        {/* Modal Editar/Novo */}
         <Modal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
@@ -317,8 +352,8 @@ export default function InsightsPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="text-red-600 border-red-200 hover:bg-red-50"
-                  onClick={handleDelete}
+                  className="text-red-600 border-red-200 hover:bg-red-50 dark:border-red-900/50 dark:hover:bg-red-950/30"
+                  onClick={() => setIsConfirmOpen(true)}
                 >
                   Excluir
                 </Button>
@@ -329,6 +364,19 @@ export default function InsightsPage() {
             </div>
           </form>
         </Modal>
+
+        {/* Modal de Confirmação de Exclusão */}
+        <ConfirmModal
+          isOpen={isConfirmOpen}
+          onClose={() => setIsConfirmOpen(false)}
+          onConfirm={handleDeleteConfirm}
+          title="Excluir Material?"
+          description={`Tem certeza que deseja excluir "${selectedMaterial?.material}"? Esta ação removerá o item do inventário do laboratório.`}
+          confirmText="Sim, Excluir"
+          cancelText="Cancelar"
+          variant="danger"
+          isLoading={isDeleting}
+        />
       </main>
     </div>
   );

@@ -7,9 +7,11 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Mail, Lock } from "lucide-react";
+import { useToast } from "@/contexts/ToastContext";
 
 export default function LoginPage() {
   const router = useRouter();
+  const toast = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -28,14 +30,19 @@ export default function LoginPage() {
       });
 
       if (res.ok) {
+        toast.success("Bem-vindo ao LBSA!", "Login realizado com sucesso.");
         router.push("/");
         router.refresh();
       } else {
         const data = await res.json();
-        setError(data.error || "Erro ao fazer login");
+        const msg = data.error || "Erro ao fazer login";
+        setError(msg);
+        toast.error("Falha na autenticação", msg);
       }
     } catch {
-      setError("Erro ao conectar com o servidor");
+      const msg = "Erro ao conectar com o servidor";
+      setError(msg);
+      toast.error("Erro de Conexão", msg);
     } finally {
       setIsLoading(false);
     }

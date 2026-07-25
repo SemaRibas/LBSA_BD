@@ -7,9 +7,11 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Mail, Lock, User } from "lucide-react";
+import { useToast } from "@/contexts/ToastContext";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const toast = useToast();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,12 +24,16 @@ export default function RegisterPage() {
     setError("");
 
     if (password !== confirmPassword) {
-      setError("As senhas nao conferem");
+      const msg = "As senhas não conferem";
+      setError(msg);
+      toast.warning("Atenção", msg);
       return;
     }
 
     if (password.length < 6) {
-      setError("A senha deve ter no minimo 6 caracteres");
+      const msg = "A senha deve ter no mínimo 6 caracteres";
+      setError(msg);
+      toast.warning("Senha curta", msg);
       return;
     }
 
@@ -41,13 +47,18 @@ export default function RegisterPage() {
       });
 
       if (res.ok) {
+        toast.success("Conta criada!", "Faça login com suas credenciais.");
         router.push("/login");
       } else {
         const data = await res.json();
-        setError(data.error || "Erro ao cadastrar");
+        const msg = data.error || "Erro ao cadastrar";
+        setError(msg);
+        toast.error("Erro no Cadastro", msg);
       }
     } catch {
-      setError("Erro ao conectar com o servidor");
+      const msg = "Erro ao conectar com o servidor";
+      setError(msg);
+      toast.error("Erro de Conexão", msg);
     } finally {
       setIsLoading(false);
     }

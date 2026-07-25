@@ -10,16 +10,21 @@ import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { Table } from "@/components/ui/Table";
 import { Modal } from "@/components/ui/Modal";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Select } from "@/components/ui/Select";
 import { Colecao } from "@/types";
 import { Search, Plus, Download } from "lucide-react";
+import { useToast } from "@/contexts/ToastContext";
 
 export default function ChannelsPage() {
   const router = useRouter();
+  const toast = useToast();
   const [colecoes, setColecoes] = useState<Colecao[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [selectedColecao, setSelectedColecao] = useState<Colecao | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("");
 
@@ -64,6 +69,7 @@ export default function ChannelsPage() {
       }
     } catch (error) {
       console.error("Erro ao buscar colecoes:", error);
+      toast.error("Erro ao carregar", "Não foi possível carregar o acervo de coleções.");
     } finally {
       setIsLoading(false);
     }
@@ -72,95 +78,88 @@ export default function ChannelsPage() {
   const filteredColecoes = colecoes.filter((colecao) => {
     const matchesSearch =
       colecao.numeroTombo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      colecao.identificacaoBasica.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = !filterStatus || colecao.status === filterStatus;
-    return matchesSearch && matchesFilter;
+      colecao.identificacaoBasica.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      colecao.localidade.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = !filterStatus || colecao.status === filterStatus;
+    return matchesSearch && matchesStatus;
   });
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "LIQUIDO_TURVO":
-        return <Badge variant="info">Liquido Turvo</Badge>;
-      case "TRANSPARENTE":
-        return <Badge variant="success">Transparente</Badge>;
-      case "SECO":
-        return <Badge variant="warning">Seco</Badge>;
-      default:
-        return <Badge>{status}</Badge>;
-    }
-  };
-
-  const getCondicaoBadge = (condicao: string) => {
-    switch (condicao) {
-      case "CRITICO":
-        return <Badge variant="danger">Critico</Badge>;
-      case "RAZOAVEL":
-        return <Badge variant="warning">Razoavel</Badge>;
-      case "BOM":
-        return <Badge variant="success">Bom</Badge>;
-      default:
-        return <Badge>{condicao}</Badge>;
-    }
-  };
-
   const columns = [
-    { key: "numeroTombo", label: "N. Tombo", sortable: true },
-    { key: "identificacaoBasica", label: "Identificacao", sortable: true },
-    { key: "filo", label: "Filo", sortable: true },
-    { key: "classe", label: "Classe", sortable: true },
-    { key: "localidade", label: "Localidade", render: (item: Colecao) => (
-      <span className="truncate max-w-[150px] block">{item.localidade}</span>
-    )},
-    { key: "coletor", label: "Coletor" },
-    { key: "dataColeta", label: "Data" },
     {
-      key: "condicaoFrasco",
-      label: "Condicao Frasco",
-      render: (item: Colecao) => getCondicaoBadge(item.condicaoFrasco),
+      key: "numeroTombo",
+      label: "Tombo",
+      sortable: true,
+      render: (row: Colecao) => (
+        <span className="font-bold text-teal-600 dark:text-teal-400">
+          {row.numeroTombo}
+        </span>
+      ),
+    },
+    {
+      key: "identificacaoBasica",
+      label: "Identificação",
+      sortable: true,
+      render: (row: Colecao) => (
+        <span className="font-semibold text-surface-900 dark:text-surface-100">
+          {row.identificacaoBasica}
+        </span>
+      ),
+    },
+    {
+      key: "filo",
+      label: "Taxonomia",
+      render: (row: Colecao) => (
+        <span className="text-xs text-surface-600 dark:text-surface-400">
+          {[row.filo, row.classe].filter(Boolean).join(" > ") || "-"}
+        </span>
+      ),
+    },
+    {
+      key: "numeroExemplares",
+      label: "Exemplares",
+    },
+    {
+      key: "localidade",
+      label: "Localidade",
     },
     {
       key: "status",
       label: "Status",
-      render: (item: Colecao) => getStatusBadge(item.status),
-    },
-    {
-      key: "actions",
-      label: "",
-      render: (item: Colecao) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleEdit(item);
-          }}
-        >
-          Editar
-        </Button>
-      ),
+      render: (row: Colecao) => {
+        const variants: Record<string, "success" | "warning" | "danger" | "info"> = {
+          TRANSPARENTE: "success",
+          LIQUIDO_TURVO: "warning",
+          SECO: "danger",
+        };
+        return (
+          <Badge variant={variants[row.status] || "default"}>
+            {row.status}
+          </Badge>
+        );
+      },
     },
   ];
 
-  const handleEdit = (item: Colecao) => {
-    setSelectedColecao(item);
+  const handleEdit = (colecao: Colecao) => {
+    setSelectedColecao(colecao);
     setFormData({
-      numeroTombo: item.numeroTombo,
-      identificacaoBasica: item.identificacaoBasica,
-      clado: item.clado,
-      filo: item.filo,
-      subfilo: item.subfilo,
-      classe: item.classe,
-      determinador: item.determinador,
-      numeroExemplares: item.numeroExemplares,
-      localidade: item.localidade,
-      coletor: item.coletor,
-      dataColeta: item.dataColeta,
-      fonte: item.fonte,
-      condicaoFrasco: item.condicaoFrasco,
-      observacoes: item.observacoes,
-      estagiarioResponsavel: item.estagiarioResponsavel,
-      status: item.status,
-      condicaoRecipiente: item.condicaoRecipiente,
+      numeroTombo: colecao.numeroTombo,
+      identificacaoBasica: colecao.identificacaoBasica,
+      clado: colecao.clado || "",
+      filo: colecao.filo || "",
+      subfilo: colecao.subfilo || "",
+      classe: colecao.classe || "",
+      determinador: colecao.determinador || "",
+      numeroExemplares: colecao.numeroExemplares || "",
+      localidade: colecao.localidade || "",
+      coletor: colecao.coletor || "",
+      dataColeta: colecao.dataColeta || "",
+      fonte: colecao.fonte || "",
+      condicaoFrasco: colecao.condicaoFrasco || "RAZOAVEL",
+      observacoes: colecao.observacoes || "",
+      estagiarioResponsavel: colecao.estagiarioResponsavel || "",
+      status: colecao.status || "TRANSPARENTE",
+      condicaoRecipiente: colecao.condicaoRecipiente || "FAVORAVEL",
     });
     setIsModalOpen(true);
   };
@@ -203,6 +202,9 @@ export default function ChannelsPage() {
         if (res.ok) {
           await fetchColecoes();
           setIsModalOpen(false);
+          toast.success("Coleção Atualizada!", `Coleção "${formData.numeroTombo}" foi alterada com sucesso.`);
+        } else {
+          toast.error("Erro ao salvar", "Não foi possível atualizar a coleção.");
         }
       } else {
         const res = await fetch("/api/colecoes", {
@@ -214,15 +216,20 @@ export default function ChannelsPage() {
         if (res.ok) {
           await fetchColecoes();
           setIsModalOpen(false);
+          toast.success("Coleção Cadastrada!", `Coleção "${formData.numeroTombo}" adicionada com sucesso.`);
+        } else {
+          toast.error("Erro ao cadastrar", "Não foi possível cadastrar a coleção.");
         }
       }
     } catch (error) {
       console.error("Erro ao salvar colecao:", error);
+      toast.error("Erro no Servidor", "Ocorreu uma falha ao salvar a coleção.");
     }
   };
 
-  const handleDelete = async () => {
+  const handleDeleteConfirm = async () => {
     if (!selectedColecao) return;
+    setIsDeleting(true);
 
     try {
       const res = await fetch(`/api/colecoes?id=${selectedColecao.id}`, {
@@ -231,11 +238,22 @@ export default function ChannelsPage() {
 
       if (res.ok) {
         await fetchColecoes();
+        setIsConfirmOpen(false);
         setIsModalOpen(false);
+        toast.success("Coleção Excluída!", `Coleção "${selectedColecao.numeroTombo}" removida com sucesso.`);
+      } else {
+        toast.error("Erro ao excluir", "Não foi possível excluir a coleção.");
       }
     } catch (error) {
       console.error("Erro ao deletar colecao:", error);
+      toast.error("Erro no Servidor", "Falha ao processar a exclusão.");
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const handleExport = () => {
+    toast.info("Exportação em Andamento", "Gerando arquivo de acervo de coleções em planilha...");
   };
 
   if (isLoading) {
@@ -303,7 +321,7 @@ export default function ChannelsPage() {
                 onChange={setFilterStatus}
               />
             </div>
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleExport}>
               <Download className="h-4 w-4 mr-2" />
               Exportar
             </Button>
@@ -370,69 +388,89 @@ export default function ChannelsPage() {
               />
             </div>
 
-            <Input
-              label="Localidade"
-              placeholder="Ex: Criciuma, SC"
-              value={formData.localidade}
-              onChange={(e) => setFormData({ ...formData, localidade: e.target.value })}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="Determinador"
+                placeholder="Nome do especialista"
+                value={formData.determinador}
+                onChange={(e) => setFormData({ ...formData, determinador: e.target.value })}
+              />
+              <Input
+                label="Numero de Exemplares"
+                placeholder="Ex: 5"
+                value={formData.numeroExemplares}
+                onChange={(e) => setFormData({ ...formData, numeroExemplares: e.target.value })}
+              />
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <Input
+                label="Localidade"
+                placeholder="Ex: Florianopolis - SC"
+                value={formData.localidade}
+                onChange={(e) => setFormData({ ...formData, localidade: e.target.value })}
+              />
+              <Input
                 label="Coletor"
-                placeholder="Ex: Gabriela"
+                placeholder="Nome do coletor"
                 value={formData.coletor}
                 onChange={(e) => setFormData({ ...formData, coletor: e.target.value })}
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <Input
                 label="Data da Coleta"
                 type="date"
                 value={formData.dataColeta}
                 onChange={(e) => setFormData({ ...formData, dataColeta: e.target.value })}
               />
+              <Input
+                label="Fonte/Origem"
+                placeholder="Ex: Projeto X"
+                value={formData.fonte}
+                onChange={(e) => setFormData({ ...formData, fonte: e.target.value })}
+              />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <Select
                 label="Condicao do Frasco"
                 options={[
-                  { value: "CRITICO", label: "Critico" },
-                  { value: "RAZOAVEL", label: "Razoavel" },
                   { value: "BOM", label: "Bom" },
+                  { value: "RAZOAVEL", label: "Razoavel" },
+                  { value: "CRITICO", label: "Critico" },
                 ]}
                 value={formData.condicaoFrasco}
                 onChange={(value) => setFormData({ ...formData, condicaoFrasco: value })}
               />
               <Select
-                label="Status"
+                label="Status do Liquido"
                 options={[
-                  { value: "LIQUIDO_TURVO", label: "Liquido Turvo" },
                   { value: "TRANSPARENTE", label: "Transparente" },
+                  { value: "LIQUIDO_TURVO", label: "Liquido Turvo" },
                   { value: "SECO", label: "Seco" },
                 ]}
                 value={formData.status}
                 onChange={(value) => setFormData({ ...formData, status: value })}
               />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
               <Select
-                label="Condicao do Recipiente"
+                label="Condicao Recipiente"
                 options={[
                   { value: "FAVORAVEL", label: "Favoravel" },
-                  { value: "REGULAR", label: "Regular" },
-                  { value: "DESFAVORAVEL", label: "Desfavoravel" },
+                  { value: "ATENCAO", label: "Atencao" },
                 ]}
                 value={formData.condicaoRecipiente}
                 onChange={(value) => setFormData({ ...formData, condicaoRecipiente: value })}
               />
-              <Input
-                label="Estagiario Responsavel"
-                placeholder="Ex: Bianca dos Santos Silva"
-                value={formData.estagiarioResponsavel}
-                onChange={(e) => setFormData({ ...formData, estagiarioResponsavel: e.target.value })}
-              />
             </div>
+
+            <Input
+              label="Estagiario Responsavel"
+              placeholder="Nome do estagiario"
+              value={formData.estagiarioResponsavel}
+              onChange={(e) => setFormData({ ...formData, estagiarioResponsavel: e.target.value })}
+            />
 
             <Input
               label="Observacoes"
@@ -454,8 +492,8 @@ export default function ChannelsPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="text-red-600 border-red-200 hover:bg-red-50"
-                  onClick={handleDelete}
+                  className="text-red-600 border-red-200 hover:bg-red-50 dark:border-red-900/50 dark:hover:bg-red-950/30"
+                  onClick={() => setIsConfirmOpen(true)}
                 >
                   Excluir
                 </Button>
@@ -466,6 +504,19 @@ export default function ChannelsPage() {
             </div>
           </form>
         </Modal>
+
+        {/* Modal de Confirmação de Exclusão */}
+        <ConfirmModal
+          isOpen={isConfirmOpen}
+          onClose={() => setIsConfirmOpen(false)}
+          onConfirm={handleDeleteConfirm}
+          title="Excluir Coleção?"
+          description={`Tem certeza que deseja excluir a coleção tombo "${selectedColecao?.numeroTombo}" (${selectedColecao?.identificacaoBasica})? Esta ação removerá o registro permanentemente.`}
+          confirmText="Sim, Excluir"
+          cancelText="Cancelar"
+          variant="danger"
+          isLoading={isDeleting}
+        />
       </main>
     </div>
   );
