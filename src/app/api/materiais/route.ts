@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSheet, addRow, updateRow, deleteRow, generateId } from "@/lib/excel";
-import { Material } from "@/types";
+import { Material, UserWithoutPassword } from "@/types";
 
 const SHEET_NAME = "Materiais";
+
+function getCurrentUser(request: NextRequest): UserWithoutPassword | null {
+  try {
+    const userCookie = request.cookies.get("lbsa_user");
+    if (!userCookie) return null;
+    return JSON.parse(userCookie.value);
+  } catch {
+    return null;
+  }
+}
 
 export async function GET() {
   try {
@@ -19,12 +29,13 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const user = getCurrentUser(request);
     const body = await request.json();
     const { material, quantidade, estado, validade, observacoes, imagemUrl } = body;
 
     if (!material || !quantidade) {
       return NextResponse.json(
-        { error: "Material e quantidade sao obrigatorios" },
+        { error: "Material e quantidade são obrigatórios" },
         { status: 400 }
       );
     }
@@ -37,6 +48,8 @@ export async function POST(request: NextRequest) {
       validade: validade || "Não consta",
       observacoes: observacoes || "",
       imagemUrl: imagemUrl || "",
+      createdBy: user?.email || "admin@lbsa.ufsc.br",
+      creatorName: user?.name || "Administrador",
     };
 
     await addRow(SHEET_NAME, newMaterial);
@@ -53,25 +66,36 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const user = getCurrentUser(request);
     const body = await request.json();
     const { id, ...updates } = body;
 
     if (!id) {
       return NextResponse.json(
-        { error: "ID e obrigatorio" },
+        { error: "ID é obrigatório" },
         { status: 400 }
       );
     }
 
-    const updated = await updateRow<Material>(SHEET_NAME, id, updates);
+    const { rows: materiais } = await getSheet<Material>(SHEET_NAME);
+    const existing = materiais.find((m) => m.id === id);
 
-    if (!updated) {
+    if (!existing) {
       return NextResponse.json(
-        { error: "Material nao encontrado" },
+        { error: "Material não encontrado" },
         { status: 404 }
       );
     }
 
+    // Role Permission Check: Pesquisador can ONLY edit their own created items
+    if (user && user.role === "pesquisador" && existing.createdBy && existing.createdBy !== user.email) {
+      return NextResponse.json(
+        { error: "Pesquisador só pode modificar itens cadastrados por ele mesmo." },
+        { status: 403 }
+      );
+    }
+
+    const updated = await updateRow<Material>(SHEET_NAME, id, updates);
     return NextResponse.json(updated);
   } catch (error) {
     console.error("Erro ao atualizar material:", error);
@@ -84,25 +108,36 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const user = getCurrentUser(request);
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
     if (!id) {
       return NextResponse.json(
-        { error: "ID e obrigatorio" },
+        { error: "ID é obrigatório" },
         { status: 400 }
       );
     }
 
-    const deleted = await deleteRow(SHEET_NAME, id);
+    const { rows: materiais } = await getSheet<Material>(SHEET_NAME);
+    const existing = materiais.find((m) => m.id === id);
 
-    if (!deleted) {
+    if (!existing) {
       return NextResponse.json(
-        { error: "Material nao encontrado" },
+        { error: "Material não encontrado" },
         { status: 404 }
       );
     }
 
+    // Role Permission Check: Pesquisador CANNOT delete items created by others
+    if (user && user.role === "pesquisador" && existing.createdBy && existing.createdBy !== user.email) {
+      return NextResponse.json(
+        { error: "Pesquisador não tem permissão para excluir itens de outros integrantes." },
+        { status: 403 }
+      );
+    }
+
+    const deleted = await deleteRow(SHEET_NAME, id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Erro ao deletar material:", error);

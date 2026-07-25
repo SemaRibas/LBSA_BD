@@ -1,17 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSheet, addRow, updateRow, deleteRow, generateId } from "@/lib/excel";
-import { Colecao } from "@/types";
+import { Colecao, UserWithoutPassword } from "@/types";
 
 const SHEET_NAME = "Colecoes";
+
+function getCurrentUser(request: NextRequest): UserWithoutPassword | null {
+  try {
+    const userCookie = request.cookies.get("lbsa_user");
+    if (!userCookie) return null;
+    return JSON.parse(userCookie.value);
+  } catch {
+    return null;
+  }
+}
 
 export async function GET() {
   try {
     const { rows: colecoes } = await getSheet<Colecao>(SHEET_NAME);
     return NextResponse.json(colecoes);
   } catch (error) {
-    console.error("Erro ao buscar colecoes:", error);
+    console.error("Erro ao buscar coleções:", error);
     return NextResponse.json(
-      { error: "Erro ao buscar colecoes" },
+      { error: "Erro ao buscar coleções" },
       { status: 500 }
     );
   }
@@ -19,6 +29,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const user = getCurrentUser(request);
     const body = await request.json();
     const {
       numeroTombo,
@@ -43,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     if (!numeroTombo) {
       return NextResponse.json(
-        { error: "Numero de tombo e obrigatorio" },
+        { error: "Número de tombo é obrigatório" },
         { status: 400 }
       );
     }
@@ -68,15 +79,17 @@ export async function POST(request: NextRequest) {
       status: status || "TRANSPARENTE",
       condicaoRecipiente: condicaoRecipiente || "FAVORAVEL",
       imagemUrl: imagemUrl || "",
+      createdBy: user?.email || "admin@lbsa.ufsc.br",
+      creatorName: user?.name || "Administrador",
     };
 
     await addRow(SHEET_NAME, newColecao);
 
     return NextResponse.json(newColecao, { status: 201 });
   } catch (error) {
-    console.error("Erro ao criar colecao:", error);
+    console.error("Erro ao criar coleção:", error);
     return NextResponse.json(
-      { error: "Erro ao criar colecao" },
+      { error: "Erro ao criar coleção" },
       { status: 500 }
     );
   }
@@ -84,30 +97,41 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const user = getCurrentUser(request);
     const body = await request.json();
     const { id, ...updates } = body;
 
     if (!id) {
       return NextResponse.json(
-        { error: "ID e obrigatorio" },
+        { error: "ID é obrigatório" },
         { status: 400 }
       );
     }
 
-    const updated = await updateRow<Colecao>(SHEET_NAME, id, updates);
+    const { rows: colecoes } = await getSheet<Colecao>(SHEET_NAME);
+    const existing = colecoes.find((c) => c.id === id);
 
-    if (!updated) {
+    if (!existing) {
       return NextResponse.json(
-        { error: "Colecao nao encontrada" },
+        { error: "Coleção não encontrada" },
         { status: 404 }
       );
     }
 
+    // Role Permission Check: Pesquisador can ONLY edit their own created items
+    if (user && user.role === "pesquisador" && existing.createdBy && existing.createdBy !== user.email) {
+      return NextResponse.json(
+        { error: "Pesquisador só pode modificar coleções cadastradas por ele mesmo." },
+        { status: 403 }
+      );
+    }
+
+    const updated = await updateRow<Colecao>(SHEET_NAME, id, updates);
     return NextResponse.json(updated);
   } catch (error) {
-    console.error("Erro ao atualizar colecao:", error);
+    console.error("Erro ao atualizar coleção:", error);
     return NextResponse.json(
-      { error: "Erro ao atualizar colecao" },
+      { error: "Erro ao atualizar coleção" },
       { status: 500 }
     );
   }
@@ -115,30 +139,41 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const user = getCurrentUser(request);
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
     if (!id) {
       return NextResponse.json(
-        { error: "ID e obrigatorio" },
+        { error: "ID é obrigatório" },
         { status: 400 }
       );
     }
 
-    const deleted = await deleteRow(SHEET_NAME, id);
+    const { rows: colecoes } = await getSheet<Colecao>(SHEET_NAME);
+    const existing = colecoes.find((c) => c.id === id);
 
-    if (!deleted) {
+    if (!existing) {
       return NextResponse.json(
-        { error: "Colecao nao encontrada" },
+        { error: "Coleção não encontrada" },
         { status: 404 }
       );
     }
 
+    // Role Permission Check: Pesquisador CANNOT delete items created by others
+    if (user && user.role === "pesquisador" && existing.createdBy && existing.createdBy !== user.email) {
+      return NextResponse.json(
+        { error: "Pesquisador não tem permissão para excluir coleções de outros integrantes." },
+        { status: 403 }
+      );
+    }
+
+    const deleted = await deleteRow(SHEET_NAME, id);
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Erro ao deletar colecao:", error);
+    console.error("Erro ao deletar coleção:", error);
     return NextResponse.json(
-      { error: "Erro ao deletar colecao" },
+      { error: "Erro ao deletar coleção" },
       { status: 500 }
     );
   }

@@ -1,3 +1,16 @@
+export type UserRole = "admin" | "pesquisador" | "monitor";
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  password?: string;
+  role: UserRole;
+  createdAt: string;
+}
+
+export interface UserWithoutPassword extends Omit<User, "password"> {}
+
 export interface Material {
   id: string;
   material: string;
@@ -6,6 +19,8 @@ export interface Material {
   validade: string;
   observacoes: string;
   imagemUrl?: string;
+  createdBy?: string;
+  creatorName?: string;
 }
 
 export interface Colecao {
@@ -28,6 +43,8 @@ export interface Colecao {
   status: "LIQUIDO_TURVO" | "TRANSPARENTE" | "SECO";
   condicaoRecipiente: "FAVORAVEL" | "DESFAVORAVEL" | "REGULAR";
   imagemUrl?: string;
+  createdBy?: string;
+  creatorName?: string;
 }
 
 export interface DashboardMetrics {
@@ -36,14 +53,3 @@ export interface DashboardMetrics {
   materiaisConservados: number;
   colecoesAtivas: number;
 }
-
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  password: string;
-  role: "admin" | "pesquisador" | "estagiario";
-  createdAt: string;
-}
-
-export interface UserWithoutPassword extends Omit<User, "password"> {}

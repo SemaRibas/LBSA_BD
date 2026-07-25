@@ -12,7 +12,7 @@ import { Table } from "@/components/ui/Table";
 import { Modal } from "@/components/ui/Modal";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Select } from "@/components/ui/Select";
-import { Material } from "@/types";
+import { Material, UserWithoutPassword } from "@/types";
 import { MaterialCard } from "@/components/ui/MaterialCard";
 import { Search, Plus, Download, Layers, Table as TableIcon, Edit, Trash2, Box, LayoutGrid } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
@@ -23,6 +23,7 @@ export default function InsightsPage() {
   const router = useRouter();
   const toast = useToast();
   const [materiais, setMateriais] = useState<Material[]>([]);
+  const [currentUser, setCurrentUser] = useState<UserWithoutPassword | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,6 +51,8 @@ export default function InsightsPage() {
         router.replace("/login");
         return false;
       }
+      const data = await res.json();
+      setCurrentUser(data.user);
       return true;
     };
     checkAuth().then((ok) => { if (ok !== false) fetchMateriais(); });
@@ -352,6 +355,7 @@ export default function InsightsPage() {
                   key={material.id}
                   material={material}
                   index={idx}
+                  currentUser={currentUser}
                   onEdit={handleEdit}
                   onDelete={(item) => {
                     setSelectedMaterial(item);

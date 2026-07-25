@@ -7,8 +7,9 @@ import { Header } from "@/components/layout/Header";
 import { MetricCards } from "@/components/dashboard/MetricCards";
 import { ChartCard } from "@/components/dashboard/ChartCard";
 import { ActivityCard } from "@/components/dashboard/ActivityCard";
+import { TeamCard } from "@/components/dashboard/TeamCard";
 import { Card } from "@/components/ui/Card";
-import { Material, Colecao } from "@/types";
+import { Material, Colecao, UserWithoutPassword, UserRole } from "@/types";
 import { Layers } from "lucide-react";
 import Smooth3DSlideshow from "@/components/ui/Smooth3DSlideshow";
 import { colecoesToSlides, materiaisToSlides } from "@/lib/slideAdapters";
@@ -17,6 +18,8 @@ export default function DashboardPage() {
   const router = useRouter();
   const [materiais, setMateriais] = useState<Material[]>([]);
   const [colecoes, setColecoes] = useState<Colecao[]>([]);
+  const [users, setUsers] = useState<UserWithoutPassword[]>([]);
+  const [currentUser, setCurrentUser] = useState<UserWithoutPassword | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [galleryMode, setGalleryMode] = useState<"colecoes" | "inventario">("colecoes");
 
@@ -26,8 +29,10 @@ export default function DashboardPage() {
         const res = await fetch("/api/auth/check");
         if (!res.ok) {
           router.replace("/login");
-          return;
+          return false;
         }
+        const data = await res.json();
+        setCurrentUser(data.user);
         return true;
       } catch {
         router.replace("/login");
@@ -39,13 +44,15 @@ export default function DashboardPage() {
       if (!ok) return;
       const fetchData = async () => {
         try {
-          const [materiaisRes, colecoesRes] = await Promise.all([
+          const [materiaisRes, colecoesRes, usersRes] = await Promise.all([
             fetch("/api/materiais"),
             fetch("/api/colecoes"),
+            fetch("/api/users"),
           ]);
 
           if (materiaisRes.ok) setMateriais(await materiaisRes.json());
           if (colecoesRes.ok) setColecoes(await colecoesRes.json());
+          if (usersRes.ok) setUsers(await usersRes.json());
         } catch (error) {
           console.error("Erro ao buscar dados:", error);
         } finally {
@@ -301,6 +308,19 @@ export default function DashboardPage() {
             <ChartCard chartData={chartData} />
           </div>
           <ActivityCard activities={recentActivity} />
+        </div>
+
+        {/* Integrantes da Equipe e Funções */}
+        <div className="mb-6">
+          <TeamCard
+            users={users}
+            currentUser={currentUser}
+            onUserRoleChange={(userId, newRole) => {
+              setUsers((prev) =>
+                prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
+              );
+            }}
+          />
         </div>
 
         {/* Coleções por Status Breakdown */}

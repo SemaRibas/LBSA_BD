@@ -1,16 +1,17 @@
 "use client";
 
 import { useRef } from "react";
-import { Colecao } from "@/types";
+import { Colecao, UserWithoutPassword } from "@/types";
 import { Badge } from "./Badge";
 import { Button } from "./Button";
-import { Edit, Trash2, MapPin, Tag, Box, Layers } from "lucide-react";
+import { Edit, Trash2, MapPin, Tag, Box, Layers, User } from "lucide-react";
 import { getColecaoImages } from "@/lib/slideAdapters";
 import ImageFlip from "./ImageFlip";
 
 interface ColecaoCardProps {
   colecao: Colecao;
   index?: number;
+  currentUser?: UserWithoutPassword | null;
   onEdit: (colecao: Colecao) => void;
   onDelete: (colecao: Colecao) => void;
   onSelect3D?: (colecao: Colecao) => void;
@@ -19,6 +20,7 @@ interface ColecaoCardProps {
 export function ColecaoCard({
   colecao,
   index = 0,
+  currentUser,
   onEdit,
   onDelete,
   onSelect3D,
@@ -30,6 +32,9 @@ export function ColecaoCard({
 
   const isTransparente = colecao.status === "TRANSPARENTE";
   const tiltRef = useRef<HTMLDivElement | null>(null);
+
+  const canEdit = !currentUser || currentUser.role === "admin" || currentUser.role === "monitor" || !colecao.createdBy || colecao.createdBy === currentUser.email;
+  const canDelete = !currentUser || currentUser.role === "admin" || currentUser.role === "monitor" || (colecao.createdBy && colecao.createdBy === currentUser.email);
 
   const effect = "repel";
   const tiltLimit = 15;
@@ -121,6 +126,13 @@ export function ColecaoCard({
                   <span>Det: <strong className="text-surface-700 dark:text-surface-200">{colecao.determinador}</strong></span>
                 )}
               </div>
+
+              {colecao.creatorName && (
+                <div className="flex items-center gap-1 text-[11px] text-surface-400 dark:text-surface-500 pt-1">
+                  <User className="h-3 w-3" />
+                  <span>Cadastrado por: {colecao.creatorName}</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -140,23 +152,27 @@ export function ColecaoCard({
             )}
 
             <div className="flex items-center gap-2 ml-auto">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onEdit(colecao)}
-                className="text-xs border-surface-200 dark:border-surface-700 hover:bg-surface-100 dark:hover:bg-surface-800 text-surface-700 dark:text-surface-200 px-2.5 py-1"
-              >
-                <Edit className="h-3.5 w-3.5 mr-1" />
-                Editar
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onDelete(colecao)}
-                className="text-xs border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 hover:text-red-700 dark:hover:text-red-200 px-2.5 py-1"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
+              {canEdit && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onEdit(colecao)}
+                  className="text-xs border-surface-200 dark:border-surface-700 hover:bg-surface-100 dark:hover:bg-surface-800 text-surface-700 dark:text-surface-200 px-2.5 py-1"
+                >
+                  <Edit className="h-3.5 w-3.5 mr-1" />
+                  Editar
+                </Button>
+              )}
+              {canDelete ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onDelete(colecao)}
+                  className="text-xs border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 hover:text-red-700 dark:hover:text-red-200 px-2.5 py-1"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              ) : null}
             </div>
           </div>
         </div>

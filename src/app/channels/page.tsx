@@ -12,7 +12,7 @@ import { Table } from "@/components/ui/Table";
 import { Modal } from "@/components/ui/Modal";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Select } from "@/components/ui/Select";
-import { Colecao } from "@/types";
+import { Colecao, UserWithoutPassword } from "@/types";
 import { ColecaoCard } from "@/components/ui/ColecaoCard";
 import { Search, Plus, Download, Layers, Table as TableIcon, Edit, Trash2, Box, LayoutGrid } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
@@ -23,6 +23,7 @@ export default function ChannelsPage() {
   const router = useRouter();
   const toast = useToast();
   const [colecoes, setColecoes] = useState<Colecao[]>([]);
+  const [currentUser, setCurrentUser] = useState<UserWithoutPassword | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -62,6 +63,8 @@ export default function ChannelsPage() {
         router.replace("/login");
         return false;
       }
+      const data = await res.json();
+      setCurrentUser(data.user);
       return true;
     };
     checkAuth().then((ok) => { if (ok !== false) fetchColecoes(); });
@@ -402,6 +405,7 @@ export default function ChannelsPage() {
                   key={colecao.id}
                   colecao={colecao}
                   index={idx}
+                  currentUser={currentUser}
                   onEdit={handleEdit}
                   onDelete={(item) => {
                     setSelectedColecao(item);
