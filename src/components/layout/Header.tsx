@@ -1,7 +1,8 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, LogOut, User as UserIcon } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface HeaderProps {
   title: string;
@@ -13,6 +14,8 @@ interface HeaderProps {
 const tabs = ["Insights", "Channels"];
 
 const Header = ({ title, activeTab, onTabChange, className }: HeaderProps) => {
+  const { user, logout } = useAuth();
+
   return (
     <header
       className={cn(
@@ -29,7 +32,7 @@ const Header = ({ title, activeTab, onTabChange, className }: HeaderProps) => {
         </h1>
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-4 sm:gap-6">
         <nav className="hidden md:flex items-center gap-1 bg-surface-100 dark:bg-surface-800 p-1 rounded-xl">
           {tabs.map((tab) => (
             <button
@@ -46,6 +49,28 @@ const Header = ({ title, activeTab, onTabChange, className }: HeaderProps) => {
             </button>
           ))}
         </nav>
+
+        {user && (
+          <div className="flex items-center gap-3 bg-surface-100 dark:bg-surface-800 px-3 py-1.5 rounded-xl border border-surface-200 dark:border-surface-700 shadow-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs font-bold shadow-xs">
+                {user.name ? user.name.charAt(0).toUpperCase() : <UserIcon className="h-3.5 w-3.5" />}
+              </div>
+              <span className="text-sm text-surface-700 dark:text-surface-300">
+                Olá, <strong className="font-semibold text-surface-900 dark:text-surface-100">{user.name || user.email}</strong>
+              </span>
+            </div>
+
+            <button
+              onClick={logout}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-600 dark:text-red-400 hover:text-white hover:bg-red-600 dark:hover:bg-red-600 rounded-lg transition-all duration-200 shadow-xs"
+              title="Sair da conta"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              <span>Sair</span>
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );
