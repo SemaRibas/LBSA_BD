@@ -2,9 +2,11 @@
 
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Layers } from "lucide-react";
 import { Material, Colecao } from "@/types";
 import { Skeleton } from "./Skeleton";
+import { ColecaoCard } from "./ColecaoCard";
+import { MaterialCard } from "./MaterialCard";
 
 interface Column<T> {
   key: keyof T | string;
@@ -19,6 +21,14 @@ interface TableProps<T> {
   isLoading?: boolean;
   onRowClick?: (item: T) => void;
   className?: string;
+}
+
+function isColecao(item: any): item is Colecao {
+  return typeof item === "object" && item !== null && ("numeroTombo" in item || "identificacaoBasica" in item);
+}
+
+function isMaterial(item: any): item is Material {
+  return typeof item === "object" && item !== null && ("material" in item || "quantidade" in item);
 }
 
 export function Table<T extends { id: string }>({
@@ -51,89 +61,135 @@ export function Table<T extends { id: string }>({
 
   if (isLoading) {
     return (
-      <div className={cn("overflow-x-auto", className)}>
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-surface-200 dark:border-surface-700">
-              {columns.map((col) => (
-                <th
-                  key={col.key as string}
-                  className="text-left py-3 px-4 text-sm font-semibold text-surface-600 dark:text-surface-300"
-                >
-                  {col.label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {[...Array(5)].map((_, i) => (
-              <tr key={i} className="border-b border-surface-100 dark:border-surface-800">
-                {columns.map((col) => (
-                  <td key={col.key as string} className="py-3 px-4">
-                    <Skeleton className="h-4 w-full" />
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className={cn("grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-4", className)}>
+        {[...Array(8)].map((_, i) => (
+          <div key={i} className="bg-surface-900 border border-surface-800 rounded-2xl p-4 space-y-3">
+            <Skeleton className="h-44 w-full rounded-xl" />
+            <Skeleton className="h-6 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (!sortedData || sortedData.length === 0) {
+    return (
+      <div className={cn("p-12 text-center text-surface-400 font-medium", className)}>
+        Nenhum item encontrado.
       </div>
     );
   }
 
   return (
-    <div className={cn("overflow-x-auto", className)}>
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-surface-200 dark:border-surface-700">
-            {columns.map((col) => (
-              <th
-                key={col.key as string}
-                className={cn(
-                  "text-left py-3 px-4 text-sm font-semibold text-surface-600 dark:text-surface-300",
-                  col.sortable && "cursor-pointer hover:text-teal-600 select-none"
-                )}
-                onClick={() => col.sortable && handleSort(col.key as string)}
-              >
-                <div className="flex items-center gap-1">
-                  {col.label}
-                  {col.sortable && sortConfig?.key === col.key && (
-                    sortConfig.direction === "asc" ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )
-                  )}
-                </div>
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {sortedData.map((item) => (
-            <tr
+    <div className={cn("space-y-4 p-4", className)}>
+      {/* Sort Bar */}
+      {columns.some((c) => c.sortable) && (
+        <div className="flex items-center gap-2 pb-2 border-b border-surface-200 dark:border-surface-800 text-xs font-semibold text-surface-500">
+          <span>Ordenar por:</span>
+          <div className="flex flex-wrap gap-1.5">
+            {columns
+              .filter((col) => col.sortable)
+              .map((col) => {
+                const isSorted = sortConfig?.key === col.key;
+                return (
+                  <button
+                    key={col.key as string}
+                    type="button"
+                    onClick={() => handleSort(col.key as string)}
+                    className={cn(
+                      "flex items-center gap-1 px-2.5 py-1 rounded-full border transition-all",
+                      isSorted
+                        ? "bg-teal-600/20 text-teal-400 border-teal-500/40"
+                        : "bg-surface-800/50 text-surface-400 border-surface-700 hover:text-white"
+                    )}
+                  >
+                    {col.label}
+                    {isSorted && (
+                      sortConfig?.direction === "asc" ? (
+                        <ChevronUp className="h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="h-3 w-3" />
+                      )
+                    )}
+                  </button>
+                );
+              })}
+          </div>
+        </div>
+      )}
+
+      {/* Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {sortedData.map((item, idx) => {
+          if (isColecao(item)) {
+            return (
+              <ColecaoCard
+                key={item.id}
+                colecao={item}
+                index={idx}
+                onEdit={(c) => onRowClick?.(c as unknown as T)}
+                onDelete={(c) => onRowClick?.(c as unknown as T)}
+              />
+            );
+          }
+
+          if (isMaterial(item)) {
+            return (
+              <MaterialCard
+                key={item.id}
+                material={item}
+                index={idx}
+                onEdit={(m) => onRowClick?.(m as unknown as T)}
+                onDelete={(m) => onRowClick?.(m as unknown as T)}
+              />
+            );
+          }
+
+          {/* Generic Item Card fallback matching Smooth3DSlideshow card theme */}
+          const titleCol = columns[0];
+          const titleVal = titleCol?.render
+            ? titleCol.render(item)
+            : String(item[titleCol?.key as keyof T] || `Item #${idx + 1}`);
+
+          return (
+            <div
               key={item.id}
+              onClick={() => onRowClick?.(item)}
               className={cn(
-                "border-b border-surface-100 dark:border-surface-800 transition-colors",
-                "hover:bg-surface-50 dark:hover:bg-surface-800/50",
+                "group relative flex flex-col bg-surface-900 border border-teal-500/20 hover:border-teal-500/50 rounded-2xl p-5 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1.5",
                 onRowClick && "cursor-pointer"
               )}
-              onClick={() => onRowClick?.(item)}
             >
-              {columns.map((col) => (
-                <td
-                  key={col.key as string}
-                  className="py-3 px-4 text-sm text-surface-700 dark:text-surface-300"
-                >
-                  {col.render
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-teal-950/80 text-teal-300 border border-teal-500/30">
+                  Item #{idx + 1}
+                </span>
+              </div>
+
+              <h4 className="text-lg font-bold text-white group-hover:text-teal-300 transition-colors mb-3">
+                {titleVal}
+              </h4>
+
+              <div className="space-y-2 text-xs text-surface-300 flex-1">
+                {columns.slice(1).map((col) => {
+                  const val = col.render
                     ? col.render(item)
-                    : (item[col.key as keyof T] as React.ReactNode)}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                    : (item[col.key as keyof T] as React.ReactNode);
+                  if (val === undefined || val === null || val === "") return null;
+
+                  return (
+                    <div key={col.key as string} className="flex justify-between items-center py-1 border-b border-surface-800/50">
+                      <span className="text-surface-400 font-medium">{col.label}:</span>
+                      <span className="font-semibold text-surface-200">{val}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
