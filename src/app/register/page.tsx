@@ -68,9 +68,11 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-surface-50 dark:bg-surface-950 flex items-center justify-center p-4">
       <Card className="w-full max-w-md animate-slide-up">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <span className="text-white font-bold text-2xl">L</span>
-          </div>
+          <img
+            src="/logo_2.png"
+            alt="LBSA Logo"
+            className="w-24 h-24 object-contain mx-auto mb-3 filter drop-shadow-md"
+          />
           <h1 className="text-2xl font-bold text-surface-900 dark:text-surface-100">
             Criar Conta
           </h1>

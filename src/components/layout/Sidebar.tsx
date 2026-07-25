@@ -85,8 +85,17 @@ const Sidebar = ({ className }: SidebarProps) => {
           className
         )}
       >
+        {/* Logo */}
+        <Link href="/" className="mb-2 flex items-center justify-center p-1 hover:scale-105 transition-transform" title="LBSA Dashboard">
+          <img
+            src="/logo_2.png"
+            alt="LBSA Logo"
+            className="w-12 h-12 object-contain drop-shadow-md rounded-xl"
+          />
+        </Link>
+
         {/* Navigation */}
-        <nav className="flex-1 flex flex-col items-center gap-2 mt-4">
+        <nav className="flex-1 flex flex-col items-center gap-2 mt-2">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (

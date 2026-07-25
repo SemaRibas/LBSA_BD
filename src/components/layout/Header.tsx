@@ -21,7 +21,12 @@ const Header = ({ title, className }: HeaderProps) => {
         className
       )}
     >
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
+        <img
+          src="/logo_2.png"
+          alt="LBSA Logo"
+          className="h-10 w-auto object-contain filter drop-shadow-sm"
+        />
         <h1 className="text-2xl font-bold text-surface-900 dark:text-surface-100 uppercase tracking-wide">
           {title}
         </h1>

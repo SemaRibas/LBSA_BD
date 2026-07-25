@@ -4,9 +4,14 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ToastProvider } from "@/contexts/ToastContext";
 
 export const metadata: Metadata = {
-  title: "LBSA - Laboratorio de Sistematica Animal",
-  description: "Sistema de gerenciamento do Laboratorio de Sistematica Animal (LBSA) - Inventario de materiais e colecoes sistematicas",
+  title: "LBSA - Laboratório de Sistemática Animal",
+  description: "Sistema de gerenciamento do Laboratório de Sistemática Animal (LBSA) - Inventário de materiais e coleções sistemáticas",
   keywords: ["laboratorio", "sistematica animal", "inventario", "colecoes", "biologia"],
+  icons: {
+    icon: "/logo_2.png",
+    shortcut: "/logo_2.png",
+    apple: "/logo_2.png",
+  },
 };
 
 export default function RootLayout({
