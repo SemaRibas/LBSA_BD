@@ -4,7 +4,8 @@ import { Material } from "@/types";
 import { Badge } from "./Badge";
 import { Button } from "./Button";
 import { Edit, Trash2, Calendar, FileText, Layers, Package } from "lucide-react";
-import { getMaterialImage } from "@/lib/slideAdapters";
+import { getMaterialImages } from "@/lib/slideAdapters";
+import ImageFlip from "./ImageFlip";
 
 interface MaterialCardProps {
   material: Material;
@@ -21,23 +22,28 @@ export function MaterialCard({
   onDelete,
   onSelect3D,
 }: MaterialCardProps) {
-  const imgSrc = getMaterialImage(material, index);
+  const images = getMaterialImages(material, index);
   const isConservado = material.estado === "Conservado";
 
   return (
     <div className="group relative flex flex-col bg-white dark:bg-surface-900 border border-surface-200 dark:border-teal-500/20 hover:border-teal-500/50 rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:shadow-teal-500/10 transition-all duration-300 hover:-translate-y-1.5">
-      {/* Header Image with Gradient Overlays */}
-      <div className="relative h-48 w-full overflow-hidden bg-surface-100 dark:bg-surface-950">
-        <img
-          src={imgSrc}
-          alt={material.material}
-          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+      {/* Header Image with 3D Flip Gallery & Tilt */}
+      <div className="relative h-48 w-full p-2 bg-surface-100 dark:bg-surface-950 overflow-hidden">
+        <ImageFlip
+          images={images}
+          rounded={13}
+          fit="cover"
+          tilt={true}
+          tiltOptions={{
+            scale: 119,
+            effect: "repel",
+            tiltLimit: 15,
+          }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-transparent dark:from-surface-900 dark:via-surface-900/40 dark:to-transparent" />
 
         {/* Top Badges */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 z-10">
-          <Badge variant={isConservado ? "success" : "warning"}>
+        <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-2 z-10 pointer-events-none">
+          <Badge variant={isConservado ? "success" : "warning"} className="shadow-md">
             {material.estado || "Cadastrado"}
           </Badge>
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-white/90 dark:bg-teal-950/80 backdrop-blur-md text-teal-700 dark:text-teal-300 border border-teal-500/30 shadow-md">

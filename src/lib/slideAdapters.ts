@@ -68,6 +68,28 @@ export function getColecaoImage(c: Colecao, index: number = 0): string {
     return c.imagemUrl || COLECAO_IMAGES[index % COLECAO_IMAGES.length];
 }
 
+export function getColecaoImages(c: Colecao, index: number = 0) {
+    const mainImg = c.imagemUrl || COLECAO_IMAGES[index % COLECAO_IMAGES.length];
+    const altImg1 = COLECAO_IMAGES[(index + 1) % COLECAO_IMAGES.length];
+    const altImg2 = COLECAO_IMAGES[(index + 2) % COLECAO_IMAGES.length];
+    return [
+        { image: { src: mainImg, alt: `${c.numeroTombo} - ${c.identificacaoBasica}` } },
+        { image: { src: altImg1, alt: `${c.numeroTombo} - Amostra 2` } },
+        { image: { src: altImg2, alt: `${c.numeroTombo} - Amostra 3` } },
+    ];
+}
+
 export function getMaterialImage(m: Material, index: number = 0): string {
     return m.imagemUrl || MATERIAL_IMAGES[index % MATERIAL_IMAGES.length];
+}
+
+export function getMaterialImages(m: Material, index: number = 0) {
+    const mainImg = m.imagemUrl || MATERIAL_IMAGES[index % MATERIAL_IMAGES.length];
+    const altImg1 = MATERIAL_IMAGES[(index + 1) % MATERIAL_IMAGES.length];
+    const altImg2 = MATERIAL_IMAGES[(index + 2) % MATERIAL_IMAGES.length];
+    return [
+        { image: { src: mainImg, alt: m.material } },
+        { image: { src: altImg1, alt: `${m.material} - Detalhe 2` } },
+        { image: { src: altImg2, alt: `${m.material} - Detalhe 3` } },
+    ];
 }
