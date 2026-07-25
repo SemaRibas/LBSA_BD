@@ -67,23 +67,20 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-surface-50 dark:bg-surface-950 flex items-center justify-center p-4">
       <Card className="w-full max-w-md animate-slide-up">
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 pt-2">
           <img
             src="/logo_black.png"
             alt="LBSA Logo"
-            className="w-24 h-24 object-contain mx-auto mb-3 filter drop-shadow-md dark:hidden"
+            className="w-48 sm:w-56 h-auto max-h-32 object-contain mx-auto mb-3 filter drop-shadow-md dark:hidden"
           />
           <img
             src="/logo_white.png"
             alt="LBSA Logo"
-            className="w-24 h-24 object-contain mx-auto mb-3 filter drop-shadow-md hidden dark:block"
+            className="w-48 sm:w-56 h-auto max-h-32 object-contain mx-auto mb-3 filter drop-shadow-md hidden dark:block"
           />
-          <h1 className="text-2xl font-bold text-surface-900 dark:text-surface-100">
+          <h1 className="text-xl font-bold text-surface-900 dark:text-surface-100">
             Criar Conta
           </h1>
-          <p className="text-surface-600 dark:text-surface-400 mt-1">
-            Junte-se ao LBSA
-          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
