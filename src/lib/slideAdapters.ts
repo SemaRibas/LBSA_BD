@@ -63,3 +63,11 @@ export function materiaisToSlides(materiais: Material[]): Slide[] {
         }
     })
 }
+
+export function getColecaoImage(c: Colecao, index: number = 0): string {
+    return c.imagemUrl || COLECAO_IMAGES[index % COLECAO_IMAGES.length];
+}
+
+export function getMaterialImage(m: Material, index: number = 0): string {
+    return m.imagemUrl || MATERIAL_IMAGES[index % MATERIAL_IMAGES.length];
+}
