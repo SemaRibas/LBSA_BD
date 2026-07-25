@@ -186,26 +186,11 @@ export function TeamCard({ users, currentUser, onUserRoleChange }: TeamCardProps
               {/* Role Badge or Admin Selector */}
               <div className="shrink-0 self-start xs:self-center w-full xs:w-auto">
                 {isAdmin ? (
-                  <div className="relative w-full xs:w-auto">
-                    <select
-                      value={role}
-                      disabled={updatingUserId === member.id}
-                      onChange={(e) => handleRoleSelect(member.id, e.target.value as UserRole)}
-                      className={`w-full xs:w-auto text-xs font-bold px-3 py-2 rounded-xl border transition-all cursor-pointer focus:outline-none focus:ring-2 shadow-2xs ${getSelectStyle(
-                        role
-                      )}`}
-                    >
-                      <option value="pesquisador" className="bg-white dark:bg-surface-800 text-surface-900 dark:text-surface-100 font-semibold py-2">
-                        🔬 Pesquisador
-                      </option>
-                      <option value="monitor" className="bg-white dark:bg-surface-800 text-surface-900 dark:text-surface-100 font-semibold py-2">
-                        👁️ Monitor(a)
-                      </option>
-                      <option value="admin" className="bg-white dark:bg-surface-800 text-surface-900 dark:text-surface-100 font-semibold py-2">
-                        🛡️ Administrador
-                      </option>
-                    </select>
-                  </div>
+                  <RoleSelectorDropdown
+                    currentRole={role}
+                    disabled={updatingUserId === member.id}
+                    onSelectRole={(targetRole) => handleRoleSelect(member.id, targetRole)}
+                  />
                 ) : (
                   getRoleBadge(role)
                 )}
@@ -215,5 +200,102 @@ export function TeamCard({ users, currentUser, onUserRoleChange }: TeamCardProps
         })}
       </div>
     </Card>
+  );
+}
+
+interface RoleDropdownProps {
+  currentRole: UserRole;
+  disabled?: boolean;
+  onSelectRole: (role: UserRole) => void;
+}
+
+function RoleSelectorDropdown({ currentRole, disabled, onSelectRole }: RoleDropdownProps) {
+  const [open, setOpen] = useState(false);
+
+  const rolesList: Array<{ id: UserRole; label: string; icon: any; color: string; desc: string }> = [
+    {
+      id: "admin",
+      label: "Administrador",
+      icon: Shield,
+      color: "bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 border-purple-500/30",
+      desc: "Acesso total e gestão de permissões",
+    },
+    {
+      id: "monitor",
+      label: "Monitor(a)",
+      icon: Eye,
+      color: "bg-teal-100 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300 border-teal-500/30",
+      desc: "Monitora e edita dados de todos",
+    },
+    {
+      id: "pesquisador",
+      label: "Pesquisador",
+      icon: Microscope,
+      color: "bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border-amber-500/30",
+      desc: "Cadastra e gerencia acervo próprio",
+    },
+  ];
+
+  const currentConfig = rolesList.find((r) => r.id === currentRole) || rolesList[2];
+  const CurrentIcon = currentConfig.icon;
+
+  return (
+    <div className="relative w-full xs:w-auto">
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setOpen(!open)}
+        className={`w-full xs:w-auto flex items-center justify-between gap-2 px-3 py-2 rounded-xl border text-xs font-extrabold transition-all shadow-2xs active:scale-95 ${currentConfig.color}`}
+      >
+        <div className="flex items-center gap-1.5">
+          <CurrentIcon className="h-4 w-4 shrink-0" />
+          <span>{currentConfig.label}</span>
+        </div>
+        <ChevronRight className={`h-3.5 w-3.5 transition-transform duration-200 ${open ? "rotate-90" : ""}`} />
+      </button>
+
+      {open && (
+        <>
+          {/* Overlay to close dropdown when clicking outside */}
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+
+          {/* Custom Popover Dropdown Card */}
+          <div className="absolute right-0 top-full mt-2 w-72 p-2 bg-white dark:bg-surface-900 rounded-2xl border border-surface-200 dark:border-surface-700 shadow-2xl z-50 animate-slide-up space-y-1">
+            <p className="text-[10px] uppercase font-black text-surface-400 dark:text-surface-500 px-2 py-1 tracking-wider">
+              Selecione a Função
+            </p>
+            {rolesList.map((r) => {
+              const Icon = r.icon;
+              const isSelected = r.id === currentRole;
+              return (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => {
+                    onSelectRole(r.id);
+                    setOpen(false);
+                  }}
+                  className={`w-full flex items-start gap-3 p-2.5 rounded-xl text-left transition-all ${
+                    isSelected
+                      ? "bg-teal-50 dark:bg-teal-950/60 text-teal-900 dark:text-teal-200 font-extrabold border border-teal-500/40 shadow-2xs"
+                      : "hover:bg-surface-100 dark:hover:bg-surface-800 text-surface-800 dark:text-surface-200"
+                  }`}
+                >
+                  <div className={`p-1.5 rounded-lg shrink-0 ${r.color}`}>
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold">{r.label}</div>
+                    <div className="text-[10px] text-surface-500 dark:text-surface-400 font-medium leading-snug">
+                      {r.desc}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
   );
 }
