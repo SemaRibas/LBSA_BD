@@ -61,15 +61,16 @@ const Sidebar = ({ className }: SidebarProps) => {
       {/* Mobile menu button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-teal-600 text-white rounded-xl shadow-lg"
+        aria-label="Abrir menu"
+        className="lg:hidden fixed top-3.5 left-3.5 z-50 p-2.5 min-w-[44px] min-h-[44px] bg-teal-700 hover:bg-teal-600 text-white rounded-xl shadow-lg border border-teal-500/30 flex items-center justify-center transition-all active:scale-95"
       >
-        {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
       </button>
 
       {/* Overlay */}
       {isOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-40 animate-fade-in"
           onClick={() => setIsOpen(false)}
         />
       )}

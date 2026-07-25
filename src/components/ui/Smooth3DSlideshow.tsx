@@ -4,6 +4,7 @@ import {
     useState,
     useEffect,
     useCallback,
+    useMemo,
     useRef,
     type CSSProperties,
 } from "react"
@@ -173,6 +174,21 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
 
     const loop = true
     const [active, setActive] = useState(0)
+    const [winWidth, setWinWidth] = useState(1200);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        const updateWidth = () => setWinWidth(window.innerWidth);
+        updateWidth();
+        window.addEventListener("resize", updateWidth);
+        return () => window.removeEventListener("resize", updateWidth);
+    }, []);
+
+    const effectiveCardWidth = useMemo(() => {
+        if (winWidth <= 480) return Math.min(cardWidth, winWidth - 48);
+        if (winWidth <= 768) return Math.min(cardWidth, winWidth - 64);
+        return cardWidth;
+    }, [winWidth, cardWidth]);
 
     useEffect(() => {
         setActive((a) => Math.max(0, Math.min(n - 1, a)))
@@ -312,7 +328,7 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
                         position: "absolute",
                         left: "50%",
                         top: "50%",
-                        width: cardWidth,
+                        width: effectiveCardWidth,
                         height: cardHeight,
                         borderRadius: effectiveRadius,
                         overflow: "hidden",

@@ -17,25 +17,25 @@ const Header = ({ title, className }: HeaderProps) => {
   return (
     <header
       className={cn(
-        "flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8",
+        "flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 sm:mb-8",
         className
       )}
     >
-      <div className="flex items-center gap-4">
-        <h1 className="text-2xl font-bold text-surface-900 dark:text-surface-100 uppercase tracking-wide">
+      <div className="flex items-center gap-3 pl-12 lg:pl-0">
+        <h1 className="text-xl xs:text-2xl sm:text-3xl font-extrabold text-surface-900 dark:text-surface-100 uppercase tracking-wide">
           {title}
         </h1>
       </div>
 
-      <div className="flex items-center gap-4 sm:gap-6">
+      <div className="flex items-center gap-3 sm:gap-6 self-end sm:self-center">
         {user && (
-          <div className="flex items-center gap-3 bg-surface-100 dark:bg-surface-800 px-3 py-1.5 rounded-xl border border-surface-200 dark:border-surface-700 shadow-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs font-bold shadow-xs">
+          <div className="flex items-center justify-between gap-2.5 bg-surface-100 dark:bg-surface-800 px-3 py-1.5 rounded-xl border border-surface-200 dark:border-surface-700 shadow-sm max-w-full">
+            <div className="flex items-center gap-2 truncate">
+              <div className="w-7 h-7 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs font-bold shadow-xs shrink-0">
                 {user.name ? user.name.charAt(0).toUpperCase() : <UserIcon className="h-3.5 w-3.5" />}
               </div>
-              <span className="text-sm text-surface-700 dark:text-surface-300">
-                Olá, <strong className="font-semibold text-surface-900 dark:text-surface-100">{user.name || user.email}</strong>
+              <span className="text-xs sm:text-sm text-surface-700 dark:text-surface-300 truncate">
+                Olá, <strong className="font-semibold text-surface-900 dark:text-surface-100 truncate">{user.name || user.email}</strong>
               </span>
             </div>
 

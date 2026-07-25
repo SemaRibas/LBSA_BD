@@ -83,7 +83,7 @@ export function Table<T extends { id: string }>({
 
   return (
     <div className={cn("overflow-x-auto", className)}>
-      <table className="w-full">
+      <table className="w-full min-w-[600px]">
         <thead>
           <tr className="border-b border-surface-200 dark:border-surface-700">
             {columns.map((col) => (

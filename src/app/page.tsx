@@ -185,30 +185,30 @@ export default function DashboardPage() {
             glowIntensity={9}
             className="shadow-2xl shadow-teal-500/20"
           >
-            <div className="relative w-full py-8 px-6 sm:px-12 flex flex-col md:flex-row items-center justify-between gap-6 rounded-[28px] bg-gradient-to-r from-surface-950 via-teal-950/90 to-surface-900 overflow-hidden border border-teal-500/30">
+            <div className="relative w-full py-6 sm:py-8 px-4 xs:px-6 sm:px-12 flex flex-col md:flex-row items-center justify-between gap-5 sm:gap-6 rounded-[28px] bg-gradient-to-r from-surface-950 via-teal-950/90 to-surface-900 overflow-hidden border border-teal-500/30">
               {/* Glow background accents */}
               <div className="absolute -left-20 -top-20 w-80 h-80 bg-teal-500/20 rounded-full filter blur-3xl pointer-events-none" />
               <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-emerald-500/20 rounded-full filter blur-3xl pointer-events-none" />
 
               {/* Text content */}
               <div className="flex-1 text-center md:text-left z-10">
-                <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-extrabold bg-teal-500/20 text-teal-300 border border-teal-500/30 mb-3 shadow-sm">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] xs:text-xs font-extrabold bg-teal-500/20 text-teal-300 border border-teal-500/30 mb-2.5 sm:mb-3 shadow-sm">
                   LBSA • UNIVERSIDADE ESTADUAL DO SUDOESTE DA BAHIA
                 </span>
-                <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight">
+                <h2 className="text-xl xs:text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight">
                   Laboratório de Biossistemática Animal
                 </h2>
-                <p className="mt-2 text-sm sm:text-base text-teal-100/80 max-w-xl">
+                <p className="mt-2 text-xs xs:text-sm sm:text-base text-teal-100/80 max-w-xl">
                   Gerenciamento inteligente de acervos biológicos, inventário de materiais e coleções sistemáticas com alta precisão.
                 </p>
               </div>
 
               {/* Large Hero Logo */}
-              <div className="shrink-0 flex items-center justify-center p-2 z-10">
+              <div className="shrink-0 flex items-center justify-center p-1 sm:p-2 z-10">
                 <img
                   src="/logo_white.png"
                   alt="LBSA Hero Logo"
-                  className="h-40 sm:h-52 md:h-64 w-auto object-contain filter drop-shadow-[0_12px_30px_rgba(255,255,255,0.3)] transition-transform duration-500 hover:scale-105"
+                  className="h-32 xs:h-40 sm:h-52 md:h-64 w-auto object-contain filter drop-shadow-[0_12px_30px_rgba(255,255,255,0.3)] transition-transform duration-500 hover:scale-105"
                 />
               </div>
             </div>
