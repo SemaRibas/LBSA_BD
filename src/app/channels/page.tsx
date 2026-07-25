@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { Card } from "@/components/ui/Card";
@@ -14,6 +15,7 @@ import { Colecao } from "@/types";
 import { Search, Plus, Download } from "lucide-react";
 
 export default function ChannelsPage() {
+  const router = useRouter();
   const [colecoes, setColecoes] = useState<Colecao[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -43,8 +45,16 @@ export default function ChannelsPage() {
   });
 
   useEffect(() => {
-    fetchColecoes();
-  }, []);
+    const checkAuth = async () => {
+      const res = await fetch("/api/auth/check");
+      if (!res.ok) {
+        router.replace("/login");
+        return false;
+      }
+      return true;
+    };
+    checkAuth().then((ok) => { if (ok !== false) fetchColecoes(); });
+  }, [router]);
 
   const fetchColecoes = async () => {
     try {

@@ -40,3 +40,5 @@ next-env.d.ts
 
 .vercel
 node_modules
+
+.vercel

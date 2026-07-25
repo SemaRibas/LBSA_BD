@@ -17,24 +17,41 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const checkAuth = async () => {
       try {
-        const [materiaisRes, colecoesRes] = await Promise.all([
-          fetch("/api/materiais"),
-          fetch("/api/colecoes"),
-        ]);
-
-        if (materiaisRes.ok) setMateriais(await materiaisRes.json());
-        if (colecoesRes.ok) setColecoes(await colecoesRes.json());
-      } catch (error) {
-        console.error("Erro ao buscar dados:", error);
-      } finally {
-        setIsLoading(false);
+        const res = await fetch("/api/auth/check");
+        if (!res.ok) {
+          router.replace("/login");
+          return;
+        }
+        return true;
+      } catch {
+        router.replace("/login");
+        return false;
       }
     };
 
-    fetchData();
-  }, []);
+    checkAuth().then((ok) => {
+      if (!ok) return;
+      const fetchData = async () => {
+        try {
+          const [materiaisRes, colecoesRes] = await Promise.all([
+            fetch("/api/materiais"),
+            fetch("/api/colecoes"),
+          ]);
+
+          if (materiaisRes.ok) setMateriais(await materiaisRes.json());
+          if (colecoesRes.ok) setColecoes(await colecoesRes.json());
+        } catch (error) {
+          console.error("Erro ao buscar dados:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchData();
+    });
+  }, [router]);
 
   const metrics = {
     totalMateriais: materiais.length,
