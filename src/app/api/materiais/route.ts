@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       validade: validade || "Não consta",
       observacoes: observacoes || "",
       imagemUrl: imagemUrl || "",
-      createdBy: user?.email || "admin@lbsa.ufsc.br",
+      createdBy: user?.email || "admin@lbsa.uesb.br",
       creatorName: user?.name || "Administrador",
     };
 

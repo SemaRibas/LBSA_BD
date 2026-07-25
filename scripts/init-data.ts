@@ -15,7 +15,7 @@ const usersWs = XLSX.utils.json_to_sheet([
   {
     id: "admin001",
     name: "Administrador",
-    email: "admin@lbsa.ufsc.br",
+    email: "admin@lbsa.uesb.br",
     password: "admin123",
     role: "admin",
     createdAt: new Date().toISOString(),

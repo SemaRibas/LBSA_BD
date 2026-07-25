@@ -76,7 +76,7 @@ Apos inicializar, acesse a planilha e insira na aba `Usuarios`:
 
 | id | name | email | password | role | createdAt |
 |----|------|-------|----------|------|-----------|
-| admin001 | Administrador | admin@lbsa.ufsc.br | admin123 | admin | 2024-01-01T00:00:00.000Z |
+| admin001 | Administrador | admin@lbsa.uesb.br | admin123 | admin | 2024-01-01T00:00:00.000Z |
 
 ## Alternativa: Usar planilha existente
 

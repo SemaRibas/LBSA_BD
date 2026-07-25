@@ -193,7 +193,7 @@ export default function DashboardPage() {
               {/* Text content */}
               <div className="flex-1 text-center md:text-left z-10">
                 <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-extrabold bg-teal-500/20 text-teal-300 border border-teal-500/30 mb-3 shadow-sm">
-                  LBSA • UNIVERSIDADE FEDERAL DE SANTA CATARINA
+                  LBSA • UNIVERSIDADE ESTADUAL DO SUDOESTE DA BAHIA
                 </span>
                 <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight">
                   Laboratório de Biossistemática Animal

@@ -77,7 +77,7 @@ async function initSheets() {
 
     console.log("\nPlanilha inicializada com sucesso!");
     console.log("\nProximo passo: Insira o usuario admin na aba 'Usuarios':");
-    console.log("  Email: admin@lbsa.ufsc.br");
+    console.log("  Email: admin@lbsa.uesb.br");
     console.log("  Senha: admin123");
 
   } catch (error) {
