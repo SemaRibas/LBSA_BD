@@ -13,9 +13,9 @@ import { Modal } from "@/components/ui/Modal";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Select } from "@/components/ui/Select";
 import { Material } from "@/types";
-import { Search, Plus, Download, Layers } from "lucide-react";
+import { Search, Plus, Download, Layers, Table as TableIcon, Edit, Trash2, Box } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
-import Smooth3DSlideshow from "@/components/ui/Smooth3DSlideshow";
+import Smooth3DSlideshow, { Slide } from "@/components/ui/Smooth3DSlideshow";
 import { materiaisToSlides } from "@/lib/slideAdapters";
 
 export default function InsightsPage() {
@@ -28,7 +28,9 @@ export default function InsightsPage() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
+  const [activeMaterialFromSlide, setActiveMaterialFromSlide] = useState<Material | null>(null);
   const [filterEstado, setFilterEstado] = useState<string>("");
+  const [viewMode, setViewMode] = useState<"coverflow" | "table">("coverflow");
 
   // Form state
   const [formData, setFormData] = useState({
@@ -55,7 +57,11 @@ export default function InsightsPage() {
     try {
       const res = await fetch("/api/materiais");
       if (res.ok) {
-        setMateriais(await res.json());
+        const data = await res.json();
+        setMateriais(data);
+        if (data.length > 0) {
+          setActiveMaterialFromSlide(data[0]);
+        }
       }
     } catch (error) {
       console.error("Erro ao buscar materiais:", error);
@@ -72,6 +78,8 @@ export default function InsightsPage() {
     const matchesEstado = !filterEstado || material.estado === filterEstado;
     return matchesSearch && matchesEstado;
   });
+
+  const slides = materiaisToSlides(filteredMateriais.length > 0 ? filteredMateriais : materiais);
 
   const columns = [
     {
@@ -214,6 +222,8 @@ export default function InsightsPage() {
     toast.info("Exportação em Andamento", "Gerando arquivo de inventário em planilha...");
   };
 
+  const currentItem = activeMaterialFromSlide || (filteredMateriais.length > 0 ? filteredMateriais[0] : null);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-surface-50 dark:bg-surface-950 flex items-center justify-center">
@@ -242,83 +252,176 @@ export default function InsightsPage() {
             </p>
           </Card>
           <Card className="animate-slide-up" style={{ animationDelay: "200ms" }}>
-            <p className="text-sm text-surface-600 dark:text-surface-400">Nao Consta</p>
+            <p className="text-sm text-surface-600 dark:text-surface-400">Nao Cadastrados</p>
             <p className="text-3xl font-bold text-amber-600">
               {materiais.filter((m) => m.estado === "Não consta").length}
             </p>
           </Card>
         </div>
 
-        {/* 3D Coverflow Gallery */}
-        {materiais.length > 0 && (
-          <Card className="mb-6 p-4 bg-gradient-to-br from-surface-900 via-surface-950 to-surface-900 border border-teal-500/20 shadow-2xl overflow-hidden animate-slide-up">
-            <div className="flex items-center justify-between px-4 pt-2 mb-2">
-              <div className="flex items-center gap-2 text-teal-400">
-                <Layers className="h-5 w-5" />
-                <h2 className="text-lg font-bold text-white tracking-wide">Galeria 3D Coverflow — Inventário de Materiais</h2>
-              </div>
-              <span className="text-xs px-2.5 py-1 rounded-full bg-teal-500/10 text-teal-300 border border-teal-500/30">
-                {materiais.length} materiais cadastrados
-              </span>
-            </div>
-            <Smooth3DSlideshow
-              slides={materiaisToSlides(filteredMateriais.length > 0 ? filteredMateriais : materiais)}
-              cardWidth={380}
-              cardHeight={360}
-              autoplay={false}
-              tilt={10}
-              sideTilt={6}
-              gap={7}
-              onSlideSelect={(slide) => {
-                if (slide.itemData) handleEdit(slide.itemData);
-              }}
-            />
-          </Card>
-        )}
-
-        {/* Filters and actions */}
+        {/* Controls, Filters & View Toggle */}
         <Card className="mb-6 animate-slide-up" style={{ animationDelay: "300ms" }}>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <Input
-                placeholder="Buscar material..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                icon={<Search className="h-4 w-4" />}
-              />
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex-1 w-full flex flex-col sm:flex-row gap-3">
+              <div className="flex-1">
+                <Input
+                  placeholder="Buscar material..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  icon={<Search className="h-4 w-4" />}
+                />
+              </div>
+              <div className="w-full sm:w-48">
+                <Select
+                  placeholder="Filtrar por estado"
+                  options={[
+                    { value: "", label: "Todos" },
+                    { value: "Conservado", label: "Conservado" },
+                    { value: "Não consta", label: "Nao consta" },
+                    { value: "Danificado", label: "Danificado" },
+                  ]}
+                  value={filterEstado}
+                  onChange={setFilterEstado}
+                />
+              </div>
             </div>
-            <div className="w-full sm:w-48">
-              <Select
-                placeholder="Filtrar por estado"
-                options={[
-                  { value: "", label: "Todos" },
-                  { value: "Conservado", label: "Conservado" },
-                  { value: "Não consta", label: "Nao consta" },
-                  { value: "Danificado", label: "Danificado" },
-                ]}
-                value={filterEstado}
-                onChange={setFilterEstado}
-              />
+
+            <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+              {/* Mode Selector */}
+              <div className="flex items-center bg-surface-100 dark:bg-surface-800 p-1 rounded-lg border border-surface-200 dark:border-surface-700">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("coverflow")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                    viewMode === "coverflow"
+                      ? "bg-teal-600 text-white shadow-md"
+                      : "text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white"
+                  }`}
+                >
+                  <Layers className="h-3.5 w-3.5" />
+                  Carrossel 3D
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("table")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                    viewMode === "table"
+                      ? "bg-teal-600 text-white shadow-md"
+                      : "text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white"
+                  }`}
+                >
+                  <TableIcon className="h-3.5 w-3.5" />
+                  Tabela
+                </button>
+              </div>
+
+              <Button variant="outline" onClick={handleExport} size="sm">
+                <Download className="h-4 w-4 mr-1.5" />
+                Exportar
+              </Button>
+              <Button onClick={handleNew} size="sm">
+                <Plus className="h-4 w-4 mr-1.5" />
+                Novo Material
+              </Button>
             </div>
-            <Button variant="outline" onClick={handleExport}>
-              <Download className="h-4 w-4 mr-2" />
-              Exportar
-            </Button>
-            <Button onClick={handleNew}>
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Material
-            </Button>
           </div>
         </Card>
 
-        {/* Table */}
-        <Card className="animate-slide-up" style={{ animationDelay: "400ms" }}>
-          <Table
-            data={filteredMateriais}
-            columns={columns}
-            onRowClick={handleEdit}
-          />
-        </Card>
+        {/* Display Mode Switcher */}
+        {viewMode === "coverflow" ? (
+          <div className="space-y-6 animate-fade-in">
+            {/* 3D Coverflow Slideshow Container */}
+            <Card className="p-6 bg-gradient-to-br from-surface-900 via-surface-950 to-surface-900 border border-teal-500/20 shadow-2xl overflow-hidden relative">
+              <div className="flex items-center justify-between px-2 mb-4">
+                <div className="flex items-center gap-2 text-teal-400">
+                  <Box className="h-5 w-5" />
+                  <h2 className="text-xl font-bold text-white tracking-wide">Exibição 3D Coverflow do Inventário</h2>
+                </div>
+                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30">
+                  {slides.length} itens cadastrados
+                </span>
+              </div>
+
+              {slides.length > 0 ? (
+                <Smooth3DSlideshow
+                  slides={slides}
+                  cardWidth={420}
+                  cardHeight={380}
+                  autoplay={false}
+                  tilt={12}
+                  sideTilt={8}
+                  gap={8}
+                  onSlideChange={(_, slide: Slide) => {
+                    if (slide.itemData) {
+                      setActiveMaterialFromSlide(slide.itemData);
+                    }
+                  }}
+                  onSlideSelect={(slide: Slide) => {
+                    if (slide.itemData) {
+                      handleEdit(slide.itemData);
+                    }
+                  }}
+                />
+              ) : (
+                <div className="py-16 text-center text-surface-400">Nenhum material encontrado.</div>
+              )}
+            </Card>
+
+            {/* Active Item Quick Detail Card */}
+            {currentItem && (
+              <Card className="p-6 border border-teal-500/20 bg-surface-900 text-white animate-slide-up">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-2xl font-bold text-teal-300">{currentItem.material}</h3>
+                      <Badge variant={currentItem.estado === "Conservado" ? "success" : "warning"}>
+                        {currentItem.estado}
+                      </Badge>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-surface-300 pt-1">
+                      <span><strong>Quantidade:</strong> {currentItem.quantidade}</span>
+                      <span>•</span>
+                      <span><strong>Validade:</strong> {currentItem.validade || "Não consta"}</span>
+                      <span>•</span>
+                      <span><strong>Observações:</strong> {currentItem.observacoes || "Nenhuma"}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="outline"
+                      className="text-teal-300 border-teal-500/30 hover:bg-teal-950/50"
+                      onClick={() => handleEdit(currentItem)}
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Editar Material
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="text-red-400 border-red-500/30 hover:bg-red-950/50"
+                      onClick={() => {
+                        setSelectedMaterial(currentItem);
+                        setIsConfirmOpen(true);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Excluir
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            )}
+          </div>
+        ) : (
+          /* Table View Mode */
+          <Card className="animate-fade-in">
+            <Table
+              data={filteredMateriais}
+              columns={columns}
+              onRowClick={handleEdit}
+            />
+          </Card>
+        )}
 
         {/* Modal Editar/Novo */}
         <Modal
