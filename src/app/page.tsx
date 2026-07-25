@@ -9,6 +9,7 @@ import { ChartCard } from "@/components/dashboard/ChartCard";
 import { ActivityCard } from "@/components/dashboard/ActivityCard";
 import { TeamCard } from "@/components/dashboard/TeamCard";
 import { Card } from "@/components/ui/Card";
+import ElectricBorder from "@/components/ui/ElectricBorder";
 import { Material, Colecao, UserWithoutPassword, UserRole } from "@/types";
 import { Layers } from "lucide-react";
 import Smooth3DSlideshow from "@/components/ui/Smooth3DSlideshow";
@@ -72,6 +73,8 @@ export default function DashboardPage() {
       colecoesAtivas: colecoes.filter((c) => c.condicaoRecipiente === "FAVORAVEL" || c.status === "TRANSPARENTE").length,
     };
   }, [materiais, colecoes]);
+
+
 
   // Dynamic Laboratory Health Score calculation (0 - 100)
   const healthData = useMemo(() => {
@@ -168,6 +171,49 @@ export default function DashboardPage() {
 
       <main className="lg:ml-20 p-4 sm:p-6 lg:p-8">
         <Header title="Dashboard" activeTab="Insights" />
+
+        {/* Electric Hero Logo Banner */}
+        <div className="mb-8 animate-slide-up">
+          <ElectricBorder
+            color="#FFFFFF"
+            glowColor="#FFFFFF"
+            bgColor="#090d16"
+            speed={1}
+            chaos={4}
+            thickness={3.5}
+            borderRadius={28}
+            glowIntensity={9}
+            className="shadow-2xl shadow-teal-500/20"
+          >
+            <div className="relative w-full py-8 px-6 sm:px-12 flex flex-col md:flex-row items-center justify-between gap-6 rounded-[28px] bg-gradient-to-r from-surface-950 via-teal-950/90 to-surface-900 overflow-hidden border border-teal-500/30">
+              {/* Glow background accents */}
+              <div className="absolute -left-20 -top-20 w-80 h-80 bg-teal-500/20 rounded-full filter blur-3xl pointer-events-none" />
+              <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-emerald-500/20 rounded-full filter blur-3xl pointer-events-none" />
+
+              {/* Text content */}
+              <div className="flex-1 text-center md:text-left z-10">
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-extrabold bg-teal-500/20 text-teal-300 border border-teal-500/30 mb-3 shadow-sm">
+                  LBSA • UNIVERSIDADE FEDERAL DE SANTA CATARINA
+                </span>
+                <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight">
+                  Laboratório de Biossistemática Animal
+                </h2>
+                <p className="mt-2 text-sm sm:text-base text-teal-100/80 max-w-xl">
+                  Gerenciamento inteligente de acervos biológicos, inventário de materiais e coleções sistemáticas com alta precisão.
+                </p>
+              </div>
+
+              {/* Large Hero Logo */}
+              <div className="shrink-0 flex items-center justify-center p-2 z-10">
+                <img
+                  src="/logo_white.png"
+                  alt="LBSA Hero Logo"
+                  className="h-40 sm:h-52 md:h-64 w-auto object-contain filter drop-shadow-[0_12px_30px_rgba(255,255,255,0.3)] transition-transform duration-500 hover:scale-105"
+                />
+              </div>
+            </div>
+          </ElectricBorder>
+        </div>
 
         {/* Hero Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
