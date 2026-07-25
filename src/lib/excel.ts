@@ -1,27 +1,51 @@
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { JWT } from "google-auth-library";
 
-// Configuracao do Google Sheets
-const SPREADSHEET_ID = process.env.GOOGLE_SHEETS_ID || "";
-const CLIENT_EMAIL = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || "";
-const PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n") || "";
-
-// Service account credentials
-const serviceAccountAuth = new JWT({
-  email: CLIENT_EMAIL,
-  key: PRIVATE_KEY,
-  scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-});
-
 // Cache do documento
 let doc: GoogleSpreadsheet | null = null;
 
+function getAuth(): JWT {
+  const CLIENT_EMAIL = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || "";
+  let key = process.env.GOOGLE_PRIVATE_KEY || "";
+  key = key.trim();
+  if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
+    key = key.slice(1, -1);
+  }
+  key = key.replace(/\\n/g, "\n");
+
+  return new JWT({
+    email: CLIENT_EMAIL,
+    key: key,
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+  });
+}
+
 async function getDoc(): Promise<GoogleSpreadsheet> {
+  const SPREADSHEET_ID = process.env.GOOGLE_SHEETS_ID || "";
   if (!doc) {
-    doc = new GoogleSpreadsheet(SPREADSHEET_ID, serviceAccountAuth);
+    const auth = getAuth();
+    doc = new GoogleSpreadsheet(SPREADSHEET_ID, auth);
     await doc.loadInfo();
   }
   return doc;
+}
+
+async function ensureHeaders(sheet: any, sheetName: string) {
+  try {
+    await sheet.loadHeaderRow();
+  } catch {
+    if (sheetName === "Materiais") {
+      await sheet.setHeaderRow(["id", "material", "quantidade", "estado", "validade", "observacoes", "imagemUrl"]);
+    } else if (sheetName === "Colecoes") {
+      await sheet.setHeaderRow([
+        "id", "numeroTombo", "identificacaoBasica", "clado", "filo", 
+        "subfilo", "classe", "determinador", "numeroExemplares", 
+        "localidade", "coletor", "dataColeta", "fonte", 
+        "condicaoFrasco", "observacoes", "estagiarioResponsavel", 
+        "status", "condicaoRecipiente", "imagemUrl"
+      ]);
+    }
+  }
 }
 
 async function getSheet<T>(sheetName: string): Promise<{ sheet: any; rows: T[] }> {
@@ -33,7 +57,7 @@ async function getSheet<T>(sheetName: string): Promise<{ sheet: any; rows: T[] }
     sheet = await doc.addSheet({ title: sheetName });
   }
 
-  await sheet.loadHeaderRow().catch(() => {});
+  await ensureHeaders(sheet, sheetName);
   
   const rawRows = await sheet.getRows();
   
@@ -69,6 +93,8 @@ async function addRow<T extends Record<string, any>>(sheetName: string, item: T)
     });
   }
 
+  await ensureHeaders(sheet, sheetName);
+
   const cleanData: Record<string, any> = {};
   Object.keys(item).forEach((key) => {
     if (!key.startsWith("_") && item[key] !== undefined) {
@@ -88,6 +114,8 @@ async function updateRow<T extends Record<string, any>>(
   const doc = await getDoc();
   const sheet = doc.sheetsByTitle[sheetName];
   if (!sheet) return null;
+
+  await ensureHeaders(sheet, sheetName);
 
   const rawRows = await sheet.getRows();
   const targetRow = rawRows.find((r: any) => {
@@ -118,6 +146,8 @@ async function deleteRow(sheetName: string, id: string): Promise<boolean> {
   const doc = await getDoc();
   const sheet = doc.sheetsByTitle[sheetName];
   if (!sheet) return false;
+
+  await ensureHeaders(sheet, sheetName);
 
   const rawRows = await sheet.getRows();
   const targetRow = rawRows.find((r: any) => {
@@ -150,6 +180,8 @@ async function setSheetData<T extends Record<string, any>>(
     }
   }
   
+  await ensureHeaders(sheet, sheetName);
+
   const existingRows = await sheet.getRows();
   if (existingRows.length > 0) {
     await sheet.clearRows({ start: 0, end: existingRows.length });
