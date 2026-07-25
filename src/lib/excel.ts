@@ -35,15 +35,17 @@ async function ensureHeaders(sheet: any, sheetName: string) {
     await sheet.loadHeaderRow();
   } catch {
     if (sheetName === "Materiais") {
-      await sheet.setHeaderRow(["id", "material", "quantidade", "estado", "validade", "observacoes", "imagemUrl"]);
+      await sheet.setHeaderRow(["id", "material", "quantidade", "estado", "validade", "observacoes", "imagemUrl", "createdBy", "creatorName"]);
     } else if (sheetName === "Colecoes") {
       await sheet.setHeaderRow([
         "id", "numeroTombo", "identificacaoBasica", "clado", "filo", 
         "subfilo", "classe", "determinador", "numeroExemplares", 
         "localidade", "coletor", "dataColeta", "fonte", 
         "condicaoFrasco", "observacoes", "estagiarioResponsavel", 
-        "status", "condicaoRecipiente", "imagemUrl"
+        "status", "condicaoRecipiente", "imagemUrl", "createdBy", "creatorName"
       ]);
+    } else if (sheetName === "Usuarios") {
+      await sheet.setHeaderRow(["id", "name", "email", "password", "role", "createdAt"]);
     }
   }
 }
