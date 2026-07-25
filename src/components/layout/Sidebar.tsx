@@ -85,12 +85,12 @@ const Sidebar = ({ className }: SidebarProps) => {
           className
         )}
       >
-        {/* Logo */}
-        <Link href="/" className="mb-2 flex items-center justify-center p-1 hover:scale-105 transition-transform" title="LBSA Dashboard">
+        {/* Logo Branca Grande */}
+        <Link href="/" className="mb-4 flex flex-col items-center justify-center px-2 hover:scale-105 transition-transform" title="LBSA Dashboard">
           <img
-            src="/logo_2.png"
+            src="/logo_white.png"
             alt="LBSA Logo"
-            className="w-12 h-12 object-contain drop-shadow-md rounded-xl"
+            className="w-16 h-16 object-contain filter drop-shadow-md"
           />
         </Link>
 

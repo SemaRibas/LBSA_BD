@@ -69,9 +69,14 @@ export default function RegisterPage() {
       <Card className="w-full max-w-md animate-slide-up">
         <div className="text-center mb-8">
           <img
-            src="/logo_2.png"
+            src="/logo_black.png"
             alt="LBSA Logo"
-            className="w-24 h-24 object-contain mx-auto mb-3 filter drop-shadow-md"
+            className="w-24 h-24 object-contain mx-auto mb-3 filter drop-shadow-md dark:hidden"
+          />
+          <img
+            src="/logo_white.png"
+            alt="LBSA Logo"
+            className="w-24 h-24 object-contain mx-auto mb-3 filter drop-shadow-md hidden dark:block"
           />
           <h1 className="text-2xl font-bold text-surface-900 dark:text-surface-100">
             Criar Conta
