@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
       estagiarioResponsavel,
       status,
       condicaoRecipiente,
+      imagemUrl,
     } = body;
 
     if (!numeroTombo) {
@@ -66,6 +67,7 @@ export async function POST(request: NextRequest) {
       estagiarioResponsavel: estagiarioResponsavel || "",
       status: status || "TRANSPARENTE",
       condicaoRecipiente: condicaoRecipiente || "FAVORAVEL",
+      imagemUrl: imagemUrl || "",
     };
 
     await addRow(SHEET_NAME, newColecao);

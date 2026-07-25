@@ -20,7 +20,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { material, quantidade, estado, validade, observacoes } = body;
+    const { material, quantidade, estado, validade, observacoes, imagemUrl } = body;
 
     if (!material || !quantidade) {
       return NextResponse.json(
@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
       estado: estado || "Conservado",
       validade: validade || "Não consta",
       observacoes: observacoes || "",
+      imagemUrl: imagemUrl || "",
     };
 
     await addRow(SHEET_NAME, newMaterial);

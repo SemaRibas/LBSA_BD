@@ -39,6 +39,7 @@ export default function InsightsPage() {
     estado: "Conservado",
     validade: "",
     observacoes: "",
+    imagemUrl: "",
   });
 
   useEffect(() => {
@@ -138,6 +139,7 @@ export default function InsightsPage() {
       estado: material.estado,
       validade: material.validade || "",
       observacoes: material.observacoes || "",
+      imagemUrl: material.imagemUrl || "",
     });
     setIsModalOpen(true);
   };
@@ -150,6 +152,7 @@ export default function InsightsPage() {
       estado: "Conservado",
       validade: "",
       observacoes: "",
+      imagemUrl: "",
     });
     setIsModalOpen(true);
   };
@@ -462,6 +465,12 @@ export default function InsightsPage() {
               placeholder="Ex: 12/2025"
               value={formData.validade}
               onChange={(e) => setFormData({ ...formData, validade: e.target.value })}
+            />
+            <Input
+              label="URL da Imagem / Foto do Material (Planilha)"
+              placeholder="Ex: https://exemplo.com/foto-microscopio.jpg"
+              value={formData.imagemUrl}
+              onChange={(e) => setFormData({ ...formData, imagemUrl: e.target.value })}
             />
             <Input
               label="Observacoes"

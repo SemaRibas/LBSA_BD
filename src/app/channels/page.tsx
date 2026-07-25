@@ -51,6 +51,7 @@ export default function ChannelsPage() {
     estagiarioResponsavel: "",
     status: "TRANSPARENTE",
     condicaoRecipiente: "FAVORAVEL",
+    imagemUrl: "",
   });
 
   useEffect(() => {
@@ -170,6 +171,7 @@ export default function ChannelsPage() {
       estagiarioResponsavel: colecao.estagiarioResponsavel || "",
       status: colecao.status || "TRANSPARENTE",
       condicaoRecipiente: colecao.condicaoRecipiente || "FAVORAVEL",
+      imagemUrl: colecao.imagemUrl || "",
     });
     setIsModalOpen(true);
   };
@@ -194,6 +196,7 @@ export default function ChannelsPage() {
       estagiarioResponsavel: "",
       status: "TRANSPARENTE",
       condicaoRecipiente: "FAVORAVEL",
+      imagemUrl: "",
     });
     setIsModalOpen(true);
   };
@@ -604,6 +607,13 @@ export default function ChannelsPage() {
               placeholder="Nome do estagiario"
               value={formData.estagiarioResponsavel}
               onChange={(e) => setFormData({ ...formData, estagiarioResponsavel: e.target.value })}
+            />
+
+            <Input
+              label="URL da Imagem / Foto do Exemplar (Planilha)"
+              placeholder="Ex: https://exemplo.com/foto-frasco.jpg"
+              value={formData.imagemUrl}
+              onChange={(e) => setFormData({ ...formData, imagemUrl: e.target.value })}
             />
 
             <Input

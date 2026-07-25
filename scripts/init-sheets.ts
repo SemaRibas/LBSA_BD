@@ -50,7 +50,7 @@ async function initSheets() {
     if (!materialsSheet) {
       materialsSheet = await doc.addSheet({
         title: "Materiais",
-        headerValues: ["id", "material", "quantidade", "estado", "validade", "observacoes"],
+        headerValues: ["id", "material", "quantidade", "estado", "validade", "observacoes", "imagemUrl"],
       });
       console.log("Aba 'Materiais' criada");
     } else {
@@ -67,7 +67,7 @@ async function initSheets() {
           "subfilo", "classe", "determinador", "numeroExemplares", 
           "localidade", "coletor", "dataColeta", "fonte", 
           "condicaoFrasco", "observacoes", "estagiarioResponsavel", 
-          "status", "condicaoRecipiente"
+          "status", "condicaoRecipiente", "imagemUrl"
         ],
       });
       console.log("Aba 'Colecoes' criada");
