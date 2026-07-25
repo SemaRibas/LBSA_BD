@@ -8,16 +8,15 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
-
+import { Table } from "@/components/ui/Table";
 import { Modal } from "@/components/ui/Modal";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Select } from "@/components/ui/Select";
 import { Material } from "@/types";
-import { Search, Plus, Download, Layers, Edit, Trash2, Box, LayoutGrid } from "lucide-react";
+import { Search, Plus, Download, Layers, Table as TableIcon, Edit, Trash2, Box } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
 import Smooth3DSlideshow, { Slide } from "@/components/ui/Smooth3DSlideshow";
 import { materiaisToSlides } from "@/lib/slideAdapters";
-import { MaterialCard } from "@/components/ui/MaterialCard";
 
 export default function InsightsPage() {
   const router = useRouter();
@@ -31,7 +30,7 @@ export default function InsightsPage() {
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
   const [activeMaterialFromSlide, setActiveMaterialFromSlide] = useState<Material | null>(null);
   const [filterEstado, setFilterEstado] = useState<string>("");
-  const [viewMode, setViewMode] = useState<"cards" | "coverflow">("cards");
+  const [viewMode, setViewMode] = useState<"coverflow" | "table">("coverflow");
 
   // Form state
   const [formData, setFormData] = useState({
@@ -83,7 +82,54 @@ export default function InsightsPage() {
 
   const slides = materiaisToSlides(filteredMateriais.length > 0 ? filteredMateriais : materiais);
 
-
+  const columns = [
+    {
+      key: "material",
+      label: "Material",
+      sortable: true,
+      render: (row: Material) => (
+        <span className="font-semibold text-surface-900 dark:text-surface-100">
+          {row.material}
+        </span>
+      ),
+    },
+    {
+      key: "quantidade",
+      label: "Quantidade",
+      sortable: true,
+    },
+    {
+      key: "estado",
+      label: "Estado",
+      sortable: true,
+      render: (row: Material) => {
+        const variants: Record<string, "success" | "warning" | "danger" | "info"> = {
+          Conservado: "success",
+          "Não consta": "warning",
+          Danificado: "danger",
+          Bom: "info",
+        };
+        return (
+          <Badge variant={variants[row.estado] || "default"}>
+            {row.estado}
+          </Badge>
+        );
+      },
+    },
+    {
+      key: "validade",
+      label: "Validade",
+    },
+    {
+      key: "observacoes",
+      label: "Observacoes",
+      render: (row: Material) => (
+        <span className="text-surface-600 dark:text-surface-400 truncate max-w-xs block">
+          {row.observacoes || "-"}
+        </span>
+      ),
+    },
+  ];
 
   const handleEdit = (material: Material) => {
     setSelectedMaterial(material);
@@ -248,18 +294,6 @@ export default function InsightsPage() {
               <div className="flex items-center bg-surface-100 dark:bg-surface-800 p-1 rounded-lg border border-surface-200 dark:border-surface-700">
                 <button
                   type="button"
-                  onClick={() => setViewMode("cards")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                    viewMode === "cards"
-                      ? "bg-teal-600 text-white shadow-md"
-                      : "text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white"
-                  }`}
-                >
-                  <LayoutGrid className="h-3.5 w-3.5" />
-                  Cards
-                </button>
-                <button
-                  type="button"
                   onClick={() => setViewMode("coverflow")}
                   className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
                     viewMode === "coverflow"
@@ -269,6 +303,18 @@ export default function InsightsPage() {
                 >
                   <Layers className="h-3.5 w-3.5" />
                   Carrossel 3D
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("table")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                    viewMode === "table"
+                      ? "bg-teal-600 text-white shadow-md"
+                      : "text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white"
+                  }`}
+                >
+                  <TableIcon className="h-3.5 w-3.5" />
+                  Tabela
                 </button>
               </div>
 
@@ -285,34 +331,7 @@ export default function InsightsPage() {
         </Card>
 
         {/* Display Mode Switcher */}
-        {viewMode === "cards" ? (
-          <div className="animate-fade-in space-y-4">
-            {filteredMateriais.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredMateriais.map((material, index) => (
-                  <MaterialCard
-                    key={material.id}
-                    material={material}
-                    index={index}
-                    onEdit={handleEdit}
-                    onDelete={(item) => {
-                      setSelectedMaterial(item);
-                      setIsConfirmOpen(true);
-                    }}
-                    onSelect3D={(item) => {
-                      setActiveMaterialFromSlide(item);
-                      setViewMode("coverflow");
-                    }}
-                  />
-                ))}
-              </div>
-            ) : (
-              <Card className="p-12 text-center text-surface-400">
-                Nenhum material encontrado com os filtros selecionados.
-              </Card>
-            )}
-          </div>
-        ) : viewMode === "coverflow" ? (
+        {viewMode === "coverflow" ? (
           <div className="space-y-6 animate-fade-in">
             {/* 3D Coverflow Slideshow Container */}
             <Card className="p-6 bg-gradient-to-br from-surface-900 via-surface-950 to-surface-900 border border-teal-500/20 shadow-2xl overflow-hidden relative">
@@ -396,7 +415,16 @@ export default function InsightsPage() {
               </Card>
             )}
           </div>
-        ) : null}
+        ) : (
+          /* Table View Mode */
+          <Card className="animate-fade-in">
+            <Table
+              data={filteredMateriais}
+              columns={columns}
+              onRowClick={handleEdit}
+            />
+          </Card>
+        )}
 
         {/* Modal Editar/Novo */}
         <Modal
