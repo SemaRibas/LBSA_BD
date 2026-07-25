@@ -13,8 +13,10 @@ import { Modal } from "@/components/ui/Modal";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Select } from "@/components/ui/Select";
 import { Colecao } from "@/types";
-import { Search, Plus, Download } from "lucide-react";
+import { Search, Plus, Download, Layers } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
+import Smooth3DSlideshow from "@/components/ui/Smooth3DSlideshow";
+import { colecoesToSlides } from "@/lib/slideAdapters";
 
 export default function ChannelsPage() {
   const router = useRouter();
@@ -296,6 +298,33 @@ export default function ChannelsPage() {
             </p>
           </Card>
         </div>
+
+        {/* 3D Coverflow Gallery */}
+        {colecoes.length > 0 && (
+          <Card className="mb-6 p-4 bg-gradient-to-br from-surface-900 via-surface-950 to-surface-900 border border-teal-500/20 shadow-2xl overflow-hidden animate-slide-up">
+            <div className="flex items-center justify-between px-4 pt-2 mb-2">
+              <div className="flex items-center gap-2 text-teal-400">
+                <Layers className="h-5 w-5" />
+                <h2 className="text-lg font-bold text-white tracking-wide">Galeria 3D Coverflow — Coleções</h2>
+              </div>
+              <span className="text-xs px-2.5 py-1 rounded-full bg-teal-500/10 text-teal-300 border border-teal-500/30">
+                {colecoes.length} itens no acervo
+              </span>
+            </div>
+            <Smooth3DSlideshow
+              slides={colecoesToSlides(filteredColecoes.length > 0 ? filteredColecoes : colecoes)}
+              cardWidth={380}
+              cardHeight={360}
+              autoplay={false}
+              tilt={10}
+              sideTilt={6}
+              gap={7}
+              onSlideSelect={(slide) => {
+                if (slide.itemData) handleEdit(slide.itemData);
+              }}
+            />
+          </Card>
+        )}
 
         {/* Filters and actions */}
         <Card className="mb-6 animate-slide-up" style={{ animationDelay: "400ms" }}>

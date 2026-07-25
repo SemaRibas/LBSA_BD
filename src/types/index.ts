@@ -5,6 +5,7 @@ export interface Material {
   estado: "Conservado" | "Não consta" | "Danificado" | "Bom";
   validade: string;
   observacoes: string;
+  imagemUrl?: string;
 }
 
 export interface Colecao {
@@ -26,6 +27,7 @@ export interface Colecao {
   estagiarioResponsavel: string;
   status: "LIQUIDO_TURVO" | "TRANSPARENTE" | "SECO";
   condicaoRecipiente: "FAVORAVEL" | "DESFAVORAVEL" | "REGULAR";
+  imagemUrl?: string;
 }
 
 export interface DashboardMetrics {

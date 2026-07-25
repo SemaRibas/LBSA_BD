@@ -9,12 +9,16 @@ import { ChartCard } from "@/components/dashboard/ChartCard";
 import { ActivityCard } from "@/components/dashboard/ActivityCard";
 import { Card } from "@/components/ui/Card";
 import { Material, Colecao } from "@/types";
+import { Layers } from "lucide-react";
+import Smooth3DSlideshow from "@/components/ui/Smooth3DSlideshow";
+import { colecoesToSlides, materiaisToSlides } from "@/lib/slideAdapters";
 
 export default function DashboardPage() {
   const router = useRouter();
   const [materiais, setMateriais] = useState<Material[]>([]);
   const [colecoes, setColecoes] = useState<Colecao[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [galleryMode, setGalleryMode] = useState<"colecoes" | "inventario">("colecoes");
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -72,6 +76,8 @@ export default function DashboardPage() {
   const recentActivity = [
     { id: 1, action: "Ultima atualizacao", item: new Date().toLocaleDateString("pt-BR"), time: "Hoje" },
   ];
+
+  const slides = galleryMode === "colecoes" ? colecoesToSlides(colecoes) : materiaisToSlides(materiais);
 
   if (isLoading) {
     return (
@@ -156,6 +162,58 @@ export default function DashboardPage() {
         <div className="mb-6">
           <MetricCards metrics={metrics} />
         </div>
+
+        {/* 3D Coverflow Showcase */}
+        {slides.length > 0 && (
+          <Card className="mb-6 p-4 bg-gradient-to-br from-surface-900 via-surface-950 to-surface-900 border border-teal-500/20 shadow-2xl overflow-hidden animate-slide-up">
+            <div className="flex flex-col sm:flex-row items-center justify-between px-4 pt-2 mb-2 gap-3">
+              <div className="flex items-center gap-2 text-teal-400">
+                <Layers className="h-5 w-5" />
+                <h2 className="text-lg font-bold text-white tracking-wide">Destaques em 3D Coverflow</h2>
+              </div>
+              <div className="flex items-center gap-2 bg-surface-800/80 p-1 rounded-lg border border-surface-700/50">
+                <button
+                  type="button"
+                  onClick={() => setGalleryMode("colecoes")}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                    galleryMode === "colecoes"
+                      ? "bg-teal-600 text-white shadow-md"
+                      : "text-surface-400 hover:text-white"
+                  }`}
+                >
+                  Coleções ({colecoes.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGalleryMode("inventario")}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                    galleryMode === "inventario"
+                      ? "bg-teal-600 text-white shadow-md"
+                      : "text-surface-400 hover:text-white"
+                  }`}
+                >
+                  Inventário ({materiais.length})
+                </button>
+              </div>
+            </div>
+            <Smooth3DSlideshow
+              slides={slides}
+              cardWidth={380}
+              cardHeight={350}
+              autoplay={false}
+              tilt={10}
+              sideTilt={6}
+              gap={7}
+              onSlideSelect={(slide) => {
+                if (galleryMode === "colecoes") {
+                  router.push("/channels");
+                } else {
+                  router.push("/insights");
+                }
+              }}
+            />
+          </Card>
+        )}
 
         {/* Charts and activity */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
