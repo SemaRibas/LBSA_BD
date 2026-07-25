@@ -8,9 +8,9 @@ export const metadata: Metadata = {
   description: "Sistema de gerenciamento do Laboratório de Sistemática Animal (LBSA) - Inventário de materiais e coleções sistemáticas",
   keywords: ["laboratorio", "sistematica animal", "inventario", "colecoes", "biologia"],
   icons: {
-    icon: "/logo_2.png",
-    shortcut: "/logo_2.png",
-    apple: "/logo_2.png",
+    icon: "/logo_black.png",
+    shortcut: "/logo_black.png",
+    apple: "/logo_black.png",
   },
 };
 

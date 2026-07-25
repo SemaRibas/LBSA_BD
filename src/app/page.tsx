@@ -169,11 +169,11 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-surface-50 dark:bg-surface-950">
       <Sidebar />
 
-      <main className="lg:ml-20 p-4 sm:p-6 lg:p-8">
+      <main className="lg:ml-20 p-4 sm:p-6 lg:p-8 overflow-x-hidden max-w-full">
         <Header title="Dashboard" activeTab="Insights" />
 
         {/* Electric Hero Logo Banner */}
-        <div className="mb-8 animate-slide-up">
+        <div className="mb-8 animate-slide-up overflow-hidden max-w-full rounded-[28px]">
           <ElectricBorder
             color="#FFFFFF"
             glowColor="#FFFFFF"

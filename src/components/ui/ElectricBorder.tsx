@@ -190,7 +190,7 @@ export default function ElectricBorder({
     const gi = Math.max(1, Math.min(10, glowIntensity));
     const glowBlur = glow ? 6 + gi * 2 : 0;
     const glowPasses = glow ? gi : 0;
-    const PAD = 120;
+    const PAD = 40;
 
     let width = 0,
       height = 0;
@@ -321,7 +321,7 @@ export default function ElectricBorder({
       className={className}
       style={{
         position: "relative",
-        overflow: "visible",
+        overflow: "hidden",
         isolation: "isolate",
         width: "100%",
         height: "100%",
