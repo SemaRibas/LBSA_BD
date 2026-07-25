@@ -8,16 +8,16 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
-
+import { Table } from "@/components/ui/Table";
 import { Modal } from "@/components/ui/Modal";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Select } from "@/components/ui/Select";
 import { Colecao } from "@/types";
-import { Search, Plus, Download, Layers, Edit, Trash2, Box, LayoutGrid } from "lucide-react";
+import { ColecaoCard } from "@/components/ui/ColecaoCard";
+import { Search, Plus, Download, Layers, Table as TableIcon, Edit, Trash2, Box, LayoutGrid } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
 import Smooth3DSlideshow, { Slide } from "@/components/ui/Smooth3DSlideshow";
 import { colecoesToSlides } from "@/lib/slideAdapters";
-import { ColecaoCard } from "@/components/ui/ColecaoCard";
 
 export default function ChannelsPage() {
   const router = useRouter();
@@ -31,7 +31,7 @@ export default function ChannelsPage() {
   const [selectedColecao, setSelectedColecao] = useState<Colecao | null>(null);
   const [activeColecaoFromSlide, setActiveColecaoFromSlide] = useState<Colecao | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("");
-  const [viewMode, setViewMode] = useState<"cards" | "coverflow">("cards");
+  const [viewMode, setViewMode] = useState<"cards" | "coverflow" | "table">("cards");
 
   // Form state
   const [formData, setFormData] = useState({
@@ -96,7 +96,61 @@ export default function ChannelsPage() {
 
   const slides = colecoesToSlides(filteredColecoes.length > 0 ? filteredColecoes : colecoes);
 
-
+  const columns = [
+    {
+      key: "numeroTombo",
+      label: "Tombo",
+      sortable: true,
+      render: (row: Colecao) => (
+        <span className="font-bold text-teal-600 dark:text-teal-400">
+          {row.numeroTombo}
+        </span>
+      ),
+    },
+    {
+      key: "identificacaoBasica",
+      label: "Identificação",
+      sortable: true,
+      render: (row: Colecao) => (
+        <span className="font-semibold text-surface-900 dark:text-surface-100">
+          {row.identificacaoBasica}
+        </span>
+      ),
+    },
+    {
+      key: "filo",
+      label: "Taxonomia",
+      render: (row: Colecao) => (
+        <span className="text-xs text-surface-600 dark:text-surface-400">
+          {[row.filo, row.classe].filter(Boolean).join(" > ") || "-"}
+        </span>
+      ),
+    },
+    {
+      key: "numeroExemplares",
+      label: "Exemplares",
+    },
+    {
+      key: "localidade",
+      label: "Localidade",
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (row: Colecao) => {
+        const variants: Record<string, "success" | "warning" | "danger" | "info"> = {
+          TRANSPARENTE: "success",
+          LIQUIDO_TURVO: "warning",
+          SECO: "danger",
+        };
+        return (
+          <Badge variant={variants[row.status] || "default"}>
+            {row.status}
+          </Badge>
+        );
+      },
+    },
+  ];
 
   const handleEdit = (colecao: Colecao) => {
     setSelectedColecao(colecao);
@@ -313,6 +367,18 @@ export default function ChannelsPage() {
                   <Layers className="h-3.5 w-3.5" />
                   Carrossel 3D
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("table")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                    viewMode === "table"
+                      ? "bg-teal-600 text-white shadow-md"
+                      : "text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white"
+                  }`}
+                >
+                  <TableIcon className="h-3.5 w-3.5" />
+                  Tabela
+                </button>
               </div>
 
               <Button variant="outline" onClick={handleExport} size="sm">
@@ -321,7 +387,7 @@ export default function ChannelsPage() {
               </Button>
               <Button onClick={handleNew} size="sm">
                 <Plus className="h-4 w-4 mr-1.5" />
-                Nova Coleção
+                Nova Colecao
               </Button>
             </div>
           </div>
@@ -329,42 +395,40 @@ export default function ChannelsPage() {
 
         {/* Display Mode Switcher */}
         {viewMode === "cards" ? (
-          <div className="animate-fade-in space-y-4">
-            {filteredColecoes.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredColecoes.map((colecao, index) => (
-                  <ColecaoCard
-                    key={colecao.id}
-                    colecao={colecao}
-                    index={index}
-                    onEdit={handleEdit}
-                    onDelete={(item) => {
-                      setSelectedColecao(item);
-                      setIsConfirmOpen(true);
-                    }}
-                    onSelect3D={(item) => {
-                      setActiveColecaoFromSlide(item);
-                      setViewMode("coverflow");
-                    }}
-                  />
-                ))}
-              </div>
-            ) : (
-              <Card className="p-12 text-center text-surface-400">
-                Nenhuma coleção encontrada com os filtros selecionados.
-              </Card>
-            )}
-          </div>
+          filteredColecoes.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in">
+              {filteredColecoes.map((colecao, idx) => (
+                <ColecaoCard
+                  key={colecao.id}
+                  colecao={colecao}
+                  index={idx}
+                  onEdit={handleEdit}
+                  onDelete={(item) => {
+                    setSelectedColecao(item);
+                    setIsConfirmOpen(true);
+                  }}
+                  onSelect3D={(item) => {
+                    setActiveColecaoFromSlide(item);
+                    setViewMode("coverflow");
+                  }}
+                />
+              ))}
+            </div>
+          ) : (
+            <Card className="py-12 text-center text-surface-500">
+              Nenhuma coleção encontrada.
+            </Card>
+          )
         ) : viewMode === "coverflow" ? (
           <div className="space-y-6 animate-fade-in">
             {/* 3D Coverflow Slideshow Container */}
-            <Card className="p-6 bg-gradient-to-br from-surface-900 via-surface-950 to-surface-900 border border-teal-500/20 shadow-2xl overflow-hidden relative">
+            <Card className="p-6 bg-gradient-to-br from-surface-100 via-teal-50/20 to-surface-50 dark:from-surface-900 dark:via-surface-950 dark:to-surface-900 border border-teal-500/20 shadow-xl dark:shadow-2xl overflow-hidden relative">
               <div className="flex items-center justify-between px-2 mb-4">
-                <div className="flex items-center gap-2 text-teal-400">
+                <div className="flex items-center gap-2 text-teal-600 dark:text-teal-400">
                   <Box className="h-5 w-5" />
-                  <h2 className="text-xl font-bold text-white tracking-wide">Acervo de Coleções — Visão 3D Coverflow</h2>
+                  <h2 className="text-xl font-bold text-surface-900 dark:text-white tracking-wide">Acervo de Coleções — Visão 3D Coverflow</h2>
                 </div>
-                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30">
+                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-teal-500/10 dark:bg-teal-500/20 text-teal-700 dark:text-teal-300 border border-teal-500/30">
                   {slides.length} coleções
                 </span>
               </div>
@@ -396,18 +460,18 @@ export default function ChannelsPage() {
 
             {/* Active Item Quick Detail Card */}
             {currentItem && (
-              <Card className="p-6 border border-teal-500/20 bg-surface-900 text-white animate-slide-up">
+              <Card className="p-6 border border-teal-500/20 bg-white dark:bg-surface-900 text-surface-900 dark:text-white animate-slide-up shadow-lg">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="space-y-1">
                     <div className="flex items-center gap-3">
-                      <h3 className="text-2xl font-bold text-teal-300">
+                      <h3 className="text-2xl font-bold text-teal-600 dark:text-teal-300">
                         {currentItem.numeroTombo} - {currentItem.identificacaoBasica}
                       </h3>
                       <Badge variant={currentItem.status === "TRANSPARENTE" ? "success" : "warning"}>
                         {currentItem.status}
                       </Badge>
                     </div>
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-surface-300 pt-1">
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-surface-600 dark:text-surface-300 pt-1">
                       <span><strong>Taxonomia:</strong> {[currentItem.filo, currentItem.classe].filter(Boolean).join(" > ") || "-"}</span>
                       <span>•</span>
                       <span><strong>Exemplares:</strong> {currentItem.numeroExemplares || "1"}</span>
@@ -421,7 +485,7 @@ export default function ChannelsPage() {
                   <div className="flex items-center gap-3">
                     <Button
                       variant="outline"
-                      className="text-teal-300 border-teal-500/30 hover:bg-teal-950/50"
+                      className="text-teal-600 dark:text-teal-300 border-teal-500/30 hover:bg-teal-50 dark:hover:bg-teal-950/50"
                       onClick={() => handleEdit(currentItem)}
                     >
                       <Edit className="h-4 w-4 mr-2" />
@@ -429,7 +493,7 @@ export default function ChannelsPage() {
                     </Button>
                     <Button
                       variant="outline"
-                      className="text-red-400 border-red-500/30 hover:bg-red-950/50"
+                      className="text-red-600 dark:text-red-400 border-red-500/30 hover:bg-red-50 dark:hover:bg-red-950/50"
                       onClick={() => {
                         setSelectedColecao(currentItem);
                         setIsConfirmOpen(true);
@@ -443,7 +507,16 @@ export default function ChannelsPage() {
               </Card>
             )}
           </div>
-        ) : null}
+        ) : (
+          /* Table View Mode */
+          <Card className="animate-fade-in">
+            <Table
+              data={filteredColecoes}
+              columns={columns}
+              onRowClick={handleEdit}
+            />
+          </Card>
+        )}
 
         {/* Modal */}
         <Modal

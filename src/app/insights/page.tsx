@@ -8,16 +8,16 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
-
+import { Table } from "@/components/ui/Table";
 import { Modal } from "@/components/ui/Modal";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Select } from "@/components/ui/Select";
 import { Material } from "@/types";
-import { Search, Plus, Download, Layers, Edit, Trash2, Box, LayoutGrid } from "lucide-react";
+import { MaterialCard } from "@/components/ui/MaterialCard";
+import { Search, Plus, Download, Layers, Table as TableIcon, Edit, Trash2, Box, LayoutGrid } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
 import Smooth3DSlideshow, { Slide } from "@/components/ui/Smooth3DSlideshow";
 import { materiaisToSlides } from "@/lib/slideAdapters";
-import { MaterialCard } from "@/components/ui/MaterialCard";
 
 export default function InsightsPage() {
   const router = useRouter();
@@ -31,7 +31,7 @@ export default function InsightsPage() {
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
   const [activeMaterialFromSlide, setActiveMaterialFromSlide] = useState<Material | null>(null);
   const [filterEstado, setFilterEstado] = useState<string>("");
-  const [viewMode, setViewMode] = useState<"cards" | "coverflow">("cards");
+  const [viewMode, setViewMode] = useState<"cards" | "coverflow" | "table">("cards");
 
   // Form state
   const [formData, setFormData] = useState({
@@ -83,7 +83,54 @@ export default function InsightsPage() {
 
   const slides = materiaisToSlides(filteredMateriais.length > 0 ? filteredMateriais : materiais);
 
-
+  const columns = [
+    {
+      key: "material",
+      label: "Material",
+      sortable: true,
+      render: (row: Material) => (
+        <span className="font-semibold text-surface-900 dark:text-surface-100">
+          {row.material}
+        </span>
+      ),
+    },
+    {
+      key: "quantidade",
+      label: "Quantidade",
+      sortable: true,
+    },
+    {
+      key: "estado",
+      label: "Estado",
+      sortable: true,
+      render: (row: Material) => {
+        const variants: Record<string, "success" | "warning" | "danger" | "info"> = {
+          Conservado: "success",
+          "Não consta": "warning",
+          Danificado: "danger",
+          Bom: "info",
+        };
+        return (
+          <Badge variant={variants[row.estado] || "default"}>
+            {row.estado}
+          </Badge>
+        );
+      },
+    },
+    {
+      key: "validade",
+      label: "Validade",
+    },
+    {
+      key: "observacoes",
+      label: "Observacoes",
+      render: (row: Material) => (
+        <span className="text-surface-600 dark:text-surface-400 truncate max-w-xs block">
+          {row.observacoes || "-"}
+        </span>
+      ),
+    },
+  ];
 
   const handleEdit = (material: Material) => {
     setSelectedMaterial(material);
@@ -270,6 +317,18 @@ export default function InsightsPage() {
                   <Layers className="h-3.5 w-3.5" />
                   Carrossel 3D
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("table")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                    viewMode === "table"
+                      ? "bg-teal-600 text-white shadow-md"
+                      : "text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white"
+                  }`}
+                >
+                  <TableIcon className="h-3.5 w-3.5" />
+                  Tabela
+                </button>
               </div>
 
               <Button variant="outline" onClick={handleExport} size="sm">
@@ -286,42 +345,40 @@ export default function InsightsPage() {
 
         {/* Display Mode Switcher */}
         {viewMode === "cards" ? (
-          <div className="animate-fade-in space-y-4">
-            {filteredMateriais.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredMateriais.map((material, index) => (
-                  <MaterialCard
-                    key={material.id}
-                    material={material}
-                    index={index}
-                    onEdit={handleEdit}
-                    onDelete={(item) => {
-                      setSelectedMaterial(item);
-                      setIsConfirmOpen(true);
-                    }}
-                    onSelect3D={(item) => {
-                      setActiveMaterialFromSlide(item);
-                      setViewMode("coverflow");
-                    }}
-                  />
-                ))}
-              </div>
-            ) : (
-              <Card className="p-12 text-center text-surface-400">
-                Nenhum material encontrado com os filtros selecionados.
-              </Card>
-            )}
-          </div>
+          filteredMateriais.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in">
+              {filteredMateriais.map((material, idx) => (
+                <MaterialCard
+                  key={material.id}
+                  material={material}
+                  index={idx}
+                  onEdit={handleEdit}
+                  onDelete={(item) => {
+                    setSelectedMaterial(item);
+                    setIsConfirmOpen(true);
+                  }}
+                  onSelect3D={(item) => {
+                    setActiveMaterialFromSlide(item);
+                    setViewMode("coverflow");
+                  }}
+                />
+              ))}
+            </div>
+          ) : (
+            <Card className="py-12 text-center text-surface-500">
+              Nenhum material encontrado.
+            </Card>
+          )
         ) : viewMode === "coverflow" ? (
           <div className="space-y-6 animate-fade-in">
             {/* 3D Coverflow Slideshow Container */}
-            <Card className="p-6 bg-gradient-to-br from-surface-900 via-surface-950 to-surface-900 border border-teal-500/20 shadow-2xl overflow-hidden relative">
+            <Card className="p-6 bg-gradient-to-br from-surface-100 via-teal-50/20 to-surface-50 dark:from-surface-900 dark:via-surface-950 dark:to-surface-900 border border-teal-500/20 shadow-xl dark:shadow-2xl overflow-hidden relative">
               <div className="flex items-center justify-between px-2 mb-4">
-                <div className="flex items-center gap-2 text-teal-400">
+                <div className="flex items-center gap-2 text-teal-600 dark:text-teal-400">
                   <Box className="h-5 w-5" />
-                  <h2 className="text-xl font-bold text-white tracking-wide">Exibição 3D Coverflow do Inventário</h2>
+                  <h2 className="text-xl font-bold text-surface-900 dark:text-white tracking-wide">Exibição 3D Coverflow do Inventário</h2>
                 </div>
-                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30">
+                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-teal-500/10 dark:bg-teal-500/20 text-teal-700 dark:text-teal-300 border border-teal-500/30">
                   {slides.length} itens cadastrados
                 </span>
               </div>
@@ -353,16 +410,16 @@ export default function InsightsPage() {
 
             {/* Active Item Quick Detail Card */}
             {currentItem && (
-              <Card className="p-6 border border-teal-500/20 bg-surface-900 text-white animate-slide-up">
+              <Card className="p-6 border border-teal-500/20 bg-white dark:bg-surface-900 text-surface-900 dark:text-white animate-slide-up shadow-lg">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="space-y-1">
                     <div className="flex items-center gap-3">
-                      <h3 className="text-2xl font-bold text-teal-300">{currentItem.material}</h3>
+                      <h3 className="text-2xl font-bold text-teal-600 dark:text-teal-300">{currentItem.material}</h3>
                       <Badge variant={currentItem.estado === "Conservado" ? "success" : "warning"}>
                         {currentItem.estado}
                       </Badge>
                     </div>
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-surface-300 pt-1">
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-surface-600 dark:text-surface-300 pt-1">
                       <span><strong>Quantidade:</strong> {currentItem.quantidade}</span>
                       <span>•</span>
                       <span><strong>Validade:</strong> {currentItem.validade || "Não consta"}</span>
@@ -374,7 +431,7 @@ export default function InsightsPage() {
                   <div className="flex items-center gap-3">
                     <Button
                       variant="outline"
-                      className="text-teal-300 border-teal-500/30 hover:bg-teal-950/50"
+                      className="text-teal-600 dark:text-teal-300 border-teal-500/30 hover:bg-teal-50 dark:hover:bg-teal-950/50"
                       onClick={() => handleEdit(currentItem)}
                     >
                       <Edit className="h-4 w-4 mr-2" />
@@ -382,7 +439,7 @@ export default function InsightsPage() {
                     </Button>
                     <Button
                       variant="outline"
-                      className="text-red-400 border-red-500/30 hover:bg-red-950/50"
+                      className="text-red-600 dark:text-red-400 border-red-500/30 hover:bg-red-50 dark:hover:bg-red-950/50"
                       onClick={() => {
                         setSelectedMaterial(currentItem);
                         setIsConfirmOpen(true);
@@ -396,7 +453,16 @@ export default function InsightsPage() {
               </Card>
             )}
           </div>
-        ) : null}
+        ) : (
+          /* Table View Mode */
+          <Card className="animate-fade-in">
+            <Table
+              data={filteredMateriais}
+              columns={columns}
+              onRowClick={handleEdit}
+            />
+          </Card>
+        )}
 
         {/* Modal Editar/Novo */}
         <Modal

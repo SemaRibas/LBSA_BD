@@ -323,10 +323,9 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
                         opacity: visible ? 1 : 0,
                         cursor: isActive ? "default" : "pointer",
                         pointerEvents: visible && !isStatic ? "auto" : "none",
-                        backgroundColor: "#0f172a",
                         boxShadow: isActive
-                            ? "0 20px 40px -15px rgba(0, 0, 0, 0.5), 0 0 20px rgba(20, 184, 166, 0.2)"
-                            : "0 10px 25px -10px rgba(0, 0, 0, 0.3)",
+                            ? "0 20px 40px -15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(20, 184, 166, 0.2)"
+                            : "0 10px 25px -10px rgba(0, 0, 0, 0.15)",
                     }
 
                     return (
@@ -338,7 +337,7 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
                             }
                             aria-label={slide.title}
                             aria-hidden={!visible}
-                            className="transition-shadow duration-300 hover:shadow-2xl"
+                            className="transition-shadow duration-300 hover:shadow-2xl bg-surface-100 dark:bg-surface-900 border border-surface-200 dark:border-surface-800"
                         >
                             {src ? (
                                 <img
@@ -356,7 +355,7 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
                                     }}
                                 />
                             ) : (
-                                <div className="absolute inset-0 bg-gradient-to-br from-teal-900 to-surface-900 flex items-center justify-center p-6 text-center text-teal-100">
+                                <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 via-surface-100 to-surface-200 dark:from-teal-900/40 dark:via-surface-900 dark:to-surface-950 flex items-center justify-center p-6 text-center text-teal-800 dark:text-teal-100">
                                     <span className="text-xl font-bold">{slide.title}</span>
                                 </div>
                             )}
@@ -369,8 +368,8 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
                                             position: "absolute",
                                             inset: 0,
                                             background: isTop
-                                                ? "linear-gradient(0deg, rgba(0,0,0,0) 35%, rgba(0,0,0,0.85) 100%)"
-                                                : "linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,0.85) 100%)",
+                                                ? "linear-gradient(0deg, rgba(0,0,0,0) 35%, rgba(0,0,0,0.75) 100%)"
+                                                : "linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,0.75) 100%)",
                                             pointerEvents: "none",
                                         }}
                                     />
@@ -391,7 +390,7 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
                                         }}
                                     >
                                         {slide.badge && (
-                                            <span className="inline-block px-2.5 py-1 mb-2 text-xs font-bold tracking-wider text-teal-300 bg-teal-950/80 backdrop-blur-md rounded-full border border-teal-500/30 shadow-sm">
+                                            <span className="inline-block px-2.5 py-1 mb-2 text-xs font-bold tracking-wider text-teal-700 dark:text-teal-300 bg-teal-100/90 dark:bg-teal-950/80 backdrop-blur-md rounded-full border border-teal-500/30 shadow-sm">
                                                 {slide.badge}
                                             </span>
                                         )}
@@ -412,7 +411,7 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
                                             {slide.title}
                                         </span>
                                         {slide.subtitle && (
-                                            <span className="mt-1 text-xs font-medium text-surface-300 block drop-shadow">
+                                            <span className="mt-1 text-xs font-medium text-surface-200 dark:text-surface-300 block drop-shadow">
                                                 {slide.subtitle}
                                             </span>
                                         )}
@@ -422,13 +421,10 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
 
                             {/* Dim overlay for inactive cards */}
                             <div
+                                className="absolute inset-0 bg-white/40 dark:bg-black/60 pointer-events-none transition-opacity duration-300"
                                 style={{
-                                    position: "absolute",
-                                    inset: 0,
-                                    background: "#000000",
                                     opacity: isActive ? 0 : dim,
                                     transition: `opacity ${dur}s ${ease}`,
-                                    pointerEvents: "none",
                                 }}
                             />
                         </div>
@@ -441,7 +437,7 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
                 type="button"
                 onClick={() => step(-1)}
                 aria-label="Anterior"
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-surface-900/60 hover:bg-teal-600 text-white backdrop-blur-md flex items-center justify-center border border-white/10 transition-all duration-200 shadow-lg hover:scale-110 active:scale-95"
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/80 dark:bg-surface-900/70 hover:bg-teal-600 dark:hover:bg-teal-600 text-surface-800 dark:text-white hover:text-white dark:hover:text-white backdrop-blur-md flex items-center justify-center border border-surface-200 dark:border-white/10 transition-all duration-200 shadow-lg hover:scale-110 active:scale-95"
             >
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
@@ -451,7 +447,7 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
                 type="button"
                 onClick={() => step(1)}
                 aria-label="Próximo"
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-surface-900/60 hover:bg-teal-600 text-white backdrop-blur-md flex items-center justify-center border border-white/10 transition-all duration-200 shadow-lg hover:scale-110 active:scale-95"
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/80 dark:bg-surface-900/70 hover:bg-teal-600 dark:hover:bg-teal-600 text-surface-800 dark:text-white hover:text-white dark:hover:text-white backdrop-blur-md flex items-center justify-center border border-surface-200 dark:border-white/10 transition-all duration-200 shadow-lg hover:scale-110 active:scale-95"
             >
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
@@ -459,7 +455,7 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
             </button>
 
             {/* Indicators / Counter */}
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-950/70 backdrop-blur-md border border-white/10">
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/80 dark:bg-surface-950/70 backdrop-blur-md border border-surface-200 dark:border-white/10 shadow-sm">
                 {list.map((_, idx) => (
                     <button
                         key={idx}
@@ -471,8 +467,8 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
                         }}
                         className={`h-2 rounded-full transition-all duration-300 ${
                             idx === active
-                                ? "w-6 bg-teal-400"
-                                : "w-2 bg-surface-600 hover:bg-surface-400"
+                                ? "w-6 bg-teal-600 dark:bg-teal-400"
+                                : "w-2 bg-surface-300 dark:bg-surface-600 hover:bg-surface-400"
                         }`}
                         aria-label={`Ir para o item ${idx + 1}`}
                     />
