@@ -8,12 +8,12 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
-import { Table } from "@/components/ui/Table";
+
 import { Modal } from "@/components/ui/Modal";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Select } from "@/components/ui/Select";
 import { Material } from "@/types";
-import { Search, Plus, Download, Layers, Table as TableIcon, Edit, Trash2, Box, LayoutGrid } from "lucide-react";
+import { Search, Plus, Download, Layers, Edit, Trash2, Box, LayoutGrid } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
 import Smooth3DSlideshow, { Slide } from "@/components/ui/Smooth3DSlideshow";
 import { materiaisToSlides } from "@/lib/slideAdapters";
@@ -31,7 +31,7 @@ export default function InsightsPage() {
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
   const [activeMaterialFromSlide, setActiveMaterialFromSlide] = useState<Material | null>(null);
   const [filterEstado, setFilterEstado] = useState<string>("");
-  const [viewMode, setViewMode] = useState<"cards" | "coverflow" | "table">("cards");
+  const [viewMode, setViewMode] = useState<"cards" | "coverflow">("cards");
 
   // Form state
   const [formData, setFormData] = useState({
@@ -83,54 +83,7 @@ export default function InsightsPage() {
 
   const slides = materiaisToSlides(filteredMateriais.length > 0 ? filteredMateriais : materiais);
 
-  const columns = [
-    {
-      key: "material",
-      label: "Material",
-      sortable: true,
-      render: (row: Material) => (
-        <span className="font-semibold text-surface-900 dark:text-surface-100">
-          {row.material}
-        </span>
-      ),
-    },
-    {
-      key: "quantidade",
-      label: "Quantidade",
-      sortable: true,
-    },
-    {
-      key: "estado",
-      label: "Estado",
-      sortable: true,
-      render: (row: Material) => {
-        const variants: Record<string, "success" | "warning" | "danger" | "info"> = {
-          Conservado: "success",
-          "Não consta": "warning",
-          Danificado: "danger",
-          Bom: "info",
-        };
-        return (
-          <Badge variant={variants[row.estado] || "default"}>
-            {row.estado}
-          </Badge>
-        );
-      },
-    },
-    {
-      key: "validade",
-      label: "Validade",
-    },
-    {
-      key: "observacoes",
-      label: "Observacoes",
-      render: (row: Material) => (
-        <span className="text-surface-600 dark:text-surface-400 truncate max-w-xs block">
-          {row.observacoes || "-"}
-        </span>
-      ),
-    },
-  ];
+
 
   const handleEdit = (material: Material) => {
     setSelectedMaterial(material);
@@ -303,7 +256,7 @@ export default function InsightsPage() {
                   }`}
                 >
                   <LayoutGrid className="h-3.5 w-3.5" />
-                  Cards (Grade)
+                  Cards
                 </button>
                 <button
                   type="button"
@@ -316,18 +269,6 @@ export default function InsightsPage() {
                 >
                   <Layers className="h-3.5 w-3.5" />
                   Carrossel 3D
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode("table")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                    viewMode === "table"
-                      ? "bg-teal-600 text-white shadow-md"
-                      : "text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white"
-                  }`}
-                >
-                  <TableIcon className="h-3.5 w-3.5" />
-                  Tabela
                 </button>
               </div>
 
@@ -455,16 +396,7 @@ export default function InsightsPage() {
               </Card>
             )}
           </div>
-        ) : (
-          /* Table View Mode */
-          <Card className="animate-fade-in">
-            <Table
-              data={filteredMateriais}
-              columns={columns}
-              onRowClick={handleEdit}
-            />
-          </Card>
-        )}
+        ) : null}
 
         {/* Modal Editar/Novo */}
         <Modal

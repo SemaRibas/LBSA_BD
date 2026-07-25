@@ -8,12 +8,12 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
-import { Table } from "@/components/ui/Table";
+
 import { Modal } from "@/components/ui/Modal";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Select } from "@/components/ui/Select";
 import { Colecao } from "@/types";
-import { Search, Plus, Download, Layers, Table as TableIcon, Edit, Trash2, Box, LayoutGrid } from "lucide-react";
+import { Search, Plus, Download, Layers, Edit, Trash2, Box, LayoutGrid } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
 import Smooth3DSlideshow, { Slide } from "@/components/ui/Smooth3DSlideshow";
 import { colecoesToSlides } from "@/lib/slideAdapters";
@@ -31,7 +31,7 @@ export default function ChannelsPage() {
   const [selectedColecao, setSelectedColecao] = useState<Colecao | null>(null);
   const [activeColecaoFromSlide, setActiveColecaoFromSlide] = useState<Colecao | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("");
-  const [viewMode, setViewMode] = useState<"cards" | "coverflow" | "table">("cards");
+  const [viewMode, setViewMode] = useState<"cards" | "coverflow">("cards");
 
   // Form state
   const [formData, setFormData] = useState({
@@ -96,61 +96,7 @@ export default function ChannelsPage() {
 
   const slides = colecoesToSlides(filteredColecoes.length > 0 ? filteredColecoes : colecoes);
 
-  const columns = [
-    {
-      key: "numeroTombo",
-      label: "Tombo",
-      sortable: true,
-      render: (row: Colecao) => (
-        <span className="font-bold text-teal-600 dark:text-teal-400">
-          {row.numeroTombo}
-        </span>
-      ),
-    },
-    {
-      key: "identificacaoBasica",
-      label: "Identificação",
-      sortable: true,
-      render: (row: Colecao) => (
-        <span className="font-semibold text-surface-900 dark:text-surface-100">
-          {row.identificacaoBasica}
-        </span>
-      ),
-    },
-    {
-      key: "filo",
-      label: "Taxonomia",
-      render: (row: Colecao) => (
-        <span className="text-xs text-surface-600 dark:text-surface-400">
-          {[row.filo, row.classe].filter(Boolean).join(" > ") || "-"}
-        </span>
-      ),
-    },
-    {
-      key: "numeroExemplares",
-      label: "Exemplares",
-    },
-    {
-      key: "localidade",
-      label: "Localidade",
-    },
-    {
-      key: "status",
-      label: "Status",
-      render: (row: Colecao) => {
-        const variants: Record<string, "success" | "warning" | "danger" | "info"> = {
-          TRANSPARENTE: "success",
-          LIQUIDO_TURVO: "warning",
-          SECO: "danger",
-        };
-        return (
-          <Badge variant={variants[row.status] || "default"}>
-            {row.status}
-          </Badge>
-        );
-      },
-    },
-  ];
+
 
   const handleEdit = (colecao: Colecao) => {
     setSelectedColecao(colecao);
@@ -353,7 +299,7 @@ export default function ChannelsPage() {
                   }`}
                 >
                   <LayoutGrid className="h-3.5 w-3.5" />
-                  Cards (Grade)
+                  Cards
                 </button>
                 <button
                   type="button"
@@ -366,18 +312,6 @@ export default function ChannelsPage() {
                 >
                   <Layers className="h-3.5 w-3.5" />
                   Carrossel 3D
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode("table")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                    viewMode === "table"
-                      ? "bg-teal-600 text-white shadow-md"
-                      : "text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white"
-                  }`}
-                >
-                  <TableIcon className="h-3.5 w-3.5" />
-                  Tabela
                 </button>
               </div>
 
@@ -509,16 +443,7 @@ export default function ChannelsPage() {
               </Card>
             )}
           </div>
-        ) : (
-          /* Table View Mode */
-          <Card className="animate-fade-in">
-            <Table
-              data={filteredColecoes}
-              columns={columns}
-              onRowClick={handleEdit}
-            />
-          </Card>
-        )}
+        ) : null}
 
         {/* Modal */}
         <Modal
