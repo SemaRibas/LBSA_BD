@@ -33,16 +33,28 @@ async function getSheet<T>(sheetName: string): Promise<{ sheet: any; rows: T[] }
   if (!sheet) {
     sheet = await doc.addSheet({ title: sheetName });
   }
+
+  await sheet.loadHeaderRow().catch(() => {});
   
   const rows = await sheet.getRows();
   
   // Mapear dados
   const data = rows.map((row: any) => {
-    const obj: any = {};
-    sheet.headerValues.forEach((header: string) => {
-      obj[header] = row[header];
-    });
-    obj._rowNumber = row.rowNumber - 2; // Ajustar indice (header + 0-index)
+    const rawObj = typeof row.toObject === "function" ? row.toObject() : {};
+    const obj: any = { ...rawObj };
+    
+    if (sheet.headerValues) {
+      sheet.headerValues.forEach((header: string) => {
+        if (obj[header] === undefined) {
+          const val = typeof row.get === "function" ? row.get(header) : row[header];
+          if (val !== undefined) {
+            obj[header] = val;
+          }
+        }
+      });
+    }
+    
+    obj._rowNumber = row.rowNumber ? row.rowNumber - 2 : undefined;
     return obj;
   }) as T[];
   
