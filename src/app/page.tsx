@@ -138,8 +138,8 @@ export default function DashboardPage() {
     return [
       {
         id: 1,
-        action: "Ultima sincronizacao",
-        item: `${materiais.length} materiais e ${colecoes.length} colecoes`,
+        action: "Última sincronização",
+        item: `${materiais.length} materiais e ${colecoes.length} coleções`,
         time: "Hoje",
       },
     ];
@@ -195,7 +195,7 @@ export default function DashboardPage() {
           <Card variant="accent" className="bg-amber-50/60 dark:bg-surface-900 border border-amber-200/50 dark:border-teal-500/20">
             <div className="flex flex-col items-center justify-center h-full p-2">
               <p className="text-surface-700 dark:text-surface-300 text-sm mb-2 font-semibold tracking-wide">
-                Saude do Laboratorio
+                Saúde do Laboratório
               </p>
 
               {/* Dynamic Semi-circle Gauge SVG */}
@@ -308,14 +308,14 @@ export default function DashboardPage() {
           <div className="lg:col-span-3">
             <Card className="animate-slide-up bg-white dark:bg-surface-900 border border-surface-200 dark:border-teal-500/20" style={{ animationDelay: "700ms" }}>
               <h3 className="text-lg font-bold text-surface-900 dark:text-surface-100 mb-4">
-                Colecoes por Status
+                Coleções por Status
               </h3>
               <div className="space-y-3">
                 {[
-                  { label: "Liquido Turvo", count: colecoes.filter(c => c.status === "LIQUIDO_TURVO").length, color: "bg-blue-500" },
+                  { label: "Líquido Turvo", count: colecoes.filter(c => c.status === "LIQUIDO_TURVO").length, color: "bg-blue-500" },
                   { label: "Transparente", count: colecoes.filter(c => c.status === "TRANSPARENTE").length, color: "bg-green-500" },
-                  { label: "Frasco Critico", count: colecoes.filter(c => c.condicaoFrasco === "CRITICO").length, color: "bg-red-500" },
-                  { label: "Frasco Razoavel", count: colecoes.filter(c => c.condicaoFrasco === "RAZOAVEL").length, color: "bg-amber-500" },
+                  { label: "Frasco Crítico", count: colecoes.filter(c => c.condicaoFrasco === "CRITICO").length, color: "bg-red-500" },
+                  { label: "Frasco Razoável", count: colecoes.filter(c => c.condicaoFrasco === "RAZOAVEL").length, color: "bg-amber-500" },
                 ].map((item) => {
                   const totalCount = colecoes.length || 1;
                   const percent = Math.round((item.count / totalCount) * 100);

@@ -59,7 +59,7 @@ export default function LoginPage() {
             LBSA
           </h1>
           <p className="text-surface-600 dark:text-surface-400 mt-1">
-            Laboratorio de Sistematica Animal
+            Laboratório de Sistemática Animal
           </p>
         </div>
 
@@ -71,7 +71,7 @@ export default function LoginPage() {
           )}
 
           <Input
-            label="Email"
+            label="E-mail"
             type="email"
             placeholder="seu@email.com"
             value={email}
@@ -101,7 +101,7 @@ export default function LoginPage() {
 
         <div className="mt-6 text-center">
           <p className="text-sm text-surface-600 dark:text-surface-400">
-            Nao tem uma conta?{" "}
+            Não tem uma conta?{" "}
             <Link
               href="/register"
               className="text-teal-600 hover:text-teal-700 font-medium"

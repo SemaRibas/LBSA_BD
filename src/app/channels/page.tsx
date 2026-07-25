@@ -275,7 +275,7 @@ export default function ChannelsPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-surface-50 dark:bg-surface-950 flex items-center justify-center">
-        <div className="animate-pulse text-surface-600">Carregando colecoes...</div>
+        <div className="animate-pulse text-surface-600">Carregando coleções...</div>
       </div>
     );
   }
@@ -285,16 +285,16 @@ export default function ChannelsPage() {
       <Sidebar />
       
       <main className="lg:ml-20 p-4 sm:p-6 lg:p-8">
-        <Header title="Colecoes" activeTab="Channels" />
+        <Header title="Coleções" activeTab="Channels" />
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
           <Card className="animate-slide-up">
-            <p className="text-sm text-surface-600 dark:text-surface-400">Total Colecoes</p>
+            <p className="text-sm text-surface-600 dark:text-surface-400">Total de Coleções</p>
             <p className="text-3xl font-bold text-surface-900 dark:text-surface-100">{colecoes.length}</p>
           </Card>
           <Card className="animate-slide-up" style={{ animationDelay: "100ms" }}>
-            <p className="text-sm text-surface-600 dark:text-surface-400">Criticos</p>
+            <p className="text-sm text-surface-600 dark:text-surface-400">Críticos</p>
             <p className="text-3xl font-bold text-red-600">
               {colecoes.filter((c) => c.condicaoFrasco === "CRITICO").length}
             </p>
@@ -306,7 +306,7 @@ export default function ChannelsPage() {
             </p>
           </Card>
           <Card className="animate-slide-up" style={{ animationDelay: "300ms" }}>
-            <p className="text-sm text-surface-600 dark:text-surface-400">Favoraveis</p>
+            <p className="text-sm text-surface-600 dark:text-surface-400">Favoráveis</p>
             <p className="text-3xl font-bold text-teal-600">
               {colecoes.filter((c) => c.condicaoRecipiente === "FAVORAVEL").length}
             </p>
@@ -319,7 +319,7 @@ export default function ChannelsPage() {
             <div className="flex-1 w-full flex flex-col sm:flex-row gap-3">
               <div className="flex-1">
                 <Input
-                  placeholder="Buscar por tombo ou identificacao..."
+                  placeholder="Buscar por tombo ou identificação..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   icon={<Search className="h-4 w-4" />}
@@ -330,7 +330,7 @@ export default function ChannelsPage() {
                   placeholder="Filtrar por status"
                   options={[
                     { value: "", label: "Todos" },
-                    { value: "LIQUIDO_TURVO", label: "Liquido Turvo" },
+                    { value: "LIQUIDO_TURVO", label: "Líquido Turvo" },
                     { value: "TRANSPARENTE", label: "Transparente" },
                     { value: "SECO", label: "Seco" },
                   ]}
@@ -387,7 +387,7 @@ export default function ChannelsPage() {
               </Button>
               <Button onClick={handleNew} size="sm">
                 <Plus className="h-4 w-4 mr-1.5" />
-                Nova Colecao
+                Nova Coleção
               </Button>
             </div>
           </div>
@@ -522,20 +522,20 @@ export default function ChannelsPage() {
         <Modal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          title={selectedColecao ? "Editar Colecao" : "Nova Colecao"}
+          title={selectedColecao ? "Editar Coleção" : "Nova Coleção"}
           className="max-w-2xl"
         >
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <Input
-                label="Numero de Tombo"
+                label="Número de Tombo"
                 placeholder="Ex: LBSA00009"
                 value={formData.numeroTombo}
                 onChange={(e) => setFormData({ ...formData, numeroTombo: e.target.value })}
                 required
               />
               <Input
-                label="Identificacao Basica"
+                label="Identificação Básica"
                 placeholder="Ex: Coleoptera"
                 value={formData.identificacaoBasica}
                 onChange={(e) => setFormData({ ...formData, identificacaoBasica: e.target.value })}
@@ -571,7 +571,7 @@ export default function ChannelsPage() {
                 onChange={(e) => setFormData({ ...formData, determinador: e.target.value })}
               />
               <Input
-                label="Numero de Exemplares"
+                label="Número de Exemplares"
                 placeholder="Ex: 5"
                 value={formData.numeroExemplares}
                 onChange={(e) => setFormData({ ...formData, numeroExemplares: e.target.value })}
@@ -581,7 +581,7 @@ export default function ChannelsPage() {
             <div className="grid grid-cols-2 gap-4">
               <Input
                 label="Localidade"
-                placeholder="Ex: Florianopolis - SC"
+                placeholder="Ex: Florianópolis - SC"
                 value={formData.localidade}
                 onChange={(e) => setFormData({ ...formData, localidade: e.target.value })}
               />
@@ -610,30 +610,30 @@ export default function ChannelsPage() {
 
             <div className="grid grid-cols-3 gap-4">
               <Select
-                label="Condicao do Frasco"
+                label="Condição do Frasco"
                 options={[
                   { value: "BOM", label: "Bom" },
-                  { value: "RAZOAVEL", label: "Razoavel" },
-                  { value: "CRITICO", label: "Critico" },
+                  { value: "RAZOAVEL", label: "Razoável" },
+                  { value: "CRITICO", label: "Crítico" },
                 ]}
                 value={formData.condicaoFrasco}
                 onChange={(value) => setFormData({ ...formData, condicaoFrasco: value })}
               />
               <Select
-                label="Status do Liquido"
+                label="Status do Líquido"
                 options={[
                   { value: "TRANSPARENTE", label: "Transparente" },
-                  { value: "LIQUIDO_TURVO", label: "Liquido Turvo" },
+                  { value: "LIQUIDO_TURVO", label: "Líquido Turvo" },
                   { value: "SECO", label: "Seco" },
                 ]}
                 value={formData.status}
                 onChange={(value) => setFormData({ ...formData, status: value })}
               />
               <Select
-                label="Condicao Recipiente"
+                label="Condição do Recipiente"
                 options={[
-                  { value: "FAVORAVEL", label: "Favoravel" },
-                  { value: "ATENCAO", label: "Atencao" },
+                  { value: "FAVORAVEL", label: "Favorável" },
+                  { value: "ATENCAO", label: "Atenção" },
                 ]}
                 value={formData.condicaoRecipiente}
                 onChange={(value) => setFormData({ ...formData, condicaoRecipiente: value })}
@@ -641,8 +641,8 @@ export default function ChannelsPage() {
             </div>
 
             <Input
-              label="Estagiario Responsavel"
-              placeholder="Nome do estagiario"
+              label="Estagiário Responsável"
+              placeholder="Nome do estagiário"
               value={formData.estagiarioResponsavel}
               onChange={(e) => setFormData({ ...formData, estagiarioResponsavel: e.target.value })}
             />
@@ -655,8 +655,8 @@ export default function ChannelsPage() {
             />
 
             <Input
-              label="Observacoes"
-              placeholder="Observacoes adicionais"
+              label="Observações"
+              placeholder="Observações adicionais"
               value={formData.observacoes}
               onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
             />

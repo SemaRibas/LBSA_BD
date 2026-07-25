@@ -16,8 +16,8 @@ import { useState, useEffect } from "react";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/insights", label: "Inventarios", icon: Package },
-  { href: "/channels", label: "Colecoes", icon: Archive },
+  { href: "/insights", label: "Inventários", icon: Package },
+  { href: "/channels", label: "Coleções", icon: Archive },
 ];
 
 interface SidebarProps {

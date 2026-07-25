@@ -123,7 +123,7 @@ export default function InsightsPage() {
     },
     {
       key: "observacoes",
-      label: "Observacoes",
+      label: "Observações",
       render: (row: Material) => (
         <span className="text-surface-600 dark:text-surface-400 truncate max-w-xs block">
           {row.observacoes || "-"}
@@ -241,7 +241,7 @@ export default function InsightsPage() {
       <Sidebar />
       
       <main className="lg:ml-20 p-4 sm:p-6 lg:p-8">
-        <Header title="Inventarios" activeTab="Insights" />
+        <Header title="Inventários" activeTab="Insights" />
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
@@ -256,7 +256,7 @@ export default function InsightsPage() {
             </p>
           </Card>
           <Card className="animate-slide-up" style={{ animationDelay: "200ms" }}>
-            <p className="text-sm text-surface-600 dark:text-surface-400">Nao Cadastrados</p>
+            <p className="text-sm text-surface-600 dark:text-surface-400">Não Cadastrados</p>
             <p className="text-3xl font-bold text-amber-600">
               {materiais.filter((m) => m.estado === "Não consta").length}
             </p>
@@ -281,7 +281,7 @@ export default function InsightsPage() {
                   options={[
                     { value: "", label: "Todos" },
                     { value: "Conservado", label: "Conservado" },
-                    { value: "Não consta", label: "Nao consta" },
+                    { value: "Não consta", label: "Não consta" },
                     { value: "Danificado", label: "Danificado" },
                   ]}
                   value={filterEstado}
@@ -473,7 +473,7 @@ export default function InsightsPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               label="Nome do Material"
-              placeholder="Ex: Alcool Etilico"
+              placeholder="Ex: Álcool Etílico"
               value={formData.material}
               onChange={(e) => setFormData({ ...formData, material: e.target.value })}
               required
@@ -490,7 +490,7 @@ export default function InsightsPage() {
                 label="Estado"
                 options={[
                   { value: "Conservado", label: "Conservado" },
-                  { value: "Não consta", label: "Nao consta" },
+                  { value: "Não consta", label: "Não consta" },
                   { value: "Danificado", label: "Danificado" },
                   { value: "Bom", label: "Bom" },
                 ]}
@@ -511,8 +511,8 @@ export default function InsightsPage() {
               onChange={(e) => setFormData({ ...formData, imagemUrl: e.target.value })}
             />
             <Input
-              label="Observacoes"
-              placeholder="Observacoes adicionais"
+              label="Observações"
+              placeholder="Observações adicionais"
               value={formData.observacoes}
               onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
             />

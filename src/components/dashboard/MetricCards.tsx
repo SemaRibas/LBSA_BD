@@ -24,10 +24,10 @@ const MetricCards = ({ metrics }: MetricCardsProps) => {
       color: "text-teal-600",
     },
     {
-      label: "Total de Colecoes",
+      label: "Total de Coleções",
       value: metrics.totalColecoes,
       icon: Archive,
-      trend: `${metrics.totalColecoes} especimes`,
+      trend: `${metrics.totalColecoes} espécimes`,
       color: "text-blue-600",
     },
     {
@@ -38,10 +38,10 @@ const MetricCards = ({ metrics }: MetricCardsProps) => {
       color: "text-green-600",
     },
     {
-      label: "Colecoes Ativas",
+      label: "Coleções Ativas",
       value: metrics.colecoesAtivas,
       icon: AlertTriangle,
-      trend: `${metrics.totalColecoes > 0 ? Math.round((metrics.colecoesAtivas / metrics.totalColecoes) * 100) : 0}% favoraveis`,
+      trend: `${metrics.totalColecoes > 0 ? Math.round((metrics.colecoesAtivas / metrics.totalColecoes) * 100) : 0}% favoráveis`,
       color: "text-amber-600",
     },
   ];

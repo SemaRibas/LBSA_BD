@@ -23,14 +23,14 @@ const ChartCard = ({ chartData }: ChartCardProps) => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-bold text-surface-900 dark:text-surface-100">
-            Visao Geral
+            Visão Geral
           </h3>
           <p className="text-xs text-surface-500 dark:text-surface-400">
             Movimentação e histórico do acervo
           </p>
         </div>
         <span className="text-xs font-semibold px-3 py-1 rounded-full bg-teal-50 dark:bg-teal-950/80 text-teal-700 dark:text-teal-300 border border-teal-500/20 shadow-sm">
-          Ultimos 6 meses
+          Últimos 6 meses
         </span>
       </div>
 
@@ -79,7 +79,7 @@ const ChartCard = ({ chartData }: ChartCardProps) => {
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-amber-500" />
           <span className="text-xs font-semibold text-surface-700 dark:text-surface-300">
-            Colecoes
+            Coleções
           </span>
         </div>
       </div>

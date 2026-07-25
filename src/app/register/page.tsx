@@ -96,7 +96,7 @@ export default function RegisterPage() {
           />
 
           <Input
-            label="Email"
+            label="E-mail"
             type="email"
             placeholder="seu@email.com"
             value={email}
@@ -116,7 +116,7 @@ export default function RegisterPage() {
           />
 
           <Input
-            label="Confirmar senha"
+            label="Confirmar Senha"
             type="password"
             placeholder="••••••••"
             value={confirmPassword}
@@ -136,12 +136,12 @@ export default function RegisterPage() {
 
         <div className="mt-6 text-center">
           <p className="text-sm text-surface-600 dark:text-surface-400">
-            Ja tem uma conta?{" "}
+            Já tem uma conta?{" "}
             <Link
               href="/login"
               className="text-teal-600 hover:text-teal-700 font-medium"
             >
-              Faca login
+              Faça login
             </Link>
           </p>
         </div>
