@@ -165,20 +165,20 @@ export default function DashboardPage() {
 
         {/* 3D Coverflow Showcase */}
         {slides.length > 0 && (
-          <Card className="mb-6 p-4 bg-gradient-to-br from-surface-900 via-surface-950 to-surface-900 border border-teal-500/20 shadow-2xl overflow-hidden animate-slide-up">
+          <Card className="mb-6 p-4 bg-gradient-to-br from-surface-100 via-teal-50/20 to-surface-50 dark:from-surface-900 dark:via-surface-950 dark:to-surface-900 border border-teal-500/20 shadow-xl dark:shadow-2xl overflow-hidden animate-slide-up">
             <div className="flex flex-col sm:flex-row items-center justify-between px-4 pt-2 mb-2 gap-3">
-              <div className="flex items-center gap-2 text-teal-400">
+              <div className="flex items-center gap-2 text-teal-600 dark:text-teal-400">
                 <Layers className="h-5 w-5" />
-                <h2 className="text-lg font-bold text-white tracking-wide">Destaques em 3D Coverflow</h2>
+                <h2 className="text-lg font-bold text-surface-900 dark:text-white tracking-wide">Destaques em 3D Coverflow</h2>
               </div>
-              <div className="flex items-center gap-2 bg-surface-800/80 p-1 rounded-lg border border-surface-700/50">
+              <div className="flex items-center gap-2 bg-surface-200/70 dark:bg-surface-800/80 p-1 rounded-lg border border-surface-300/50 dark:border-surface-700/50">
                 <button
                   type="button"
                   onClick={() => setGalleryMode("colecoes")}
                   className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
                     galleryMode === "colecoes"
                       ? "bg-teal-600 text-white shadow-md"
-                      : "text-surface-400 hover:text-white"
+                      : "text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white"
                   }`}
                 >
                   Coleções ({colecoes.length})
@@ -189,7 +189,7 @@ export default function DashboardPage() {
                   className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
                     galleryMode === "inventario"
                       ? "bg-teal-600 text-white shadow-md"
-                      : "text-surface-400 hover:text-white"
+                      : "text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white"
                   }`}
                 >
                   Inventário ({materiais.length})

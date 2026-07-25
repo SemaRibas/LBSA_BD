@@ -334,13 +334,13 @@ export default function InsightsPage() {
         {viewMode === "coverflow" ? (
           <div className="space-y-6 animate-fade-in">
             {/* 3D Coverflow Slideshow Container */}
-            <Card className="p-6 bg-gradient-to-br from-surface-900 via-surface-950 to-surface-900 border border-teal-500/20 shadow-2xl overflow-hidden relative">
+            <Card className="p-6 bg-gradient-to-br from-surface-100 via-teal-50/20 to-surface-50 dark:from-surface-900 dark:via-surface-950 dark:to-surface-900 border border-teal-500/20 shadow-xl dark:shadow-2xl overflow-hidden relative">
               <div className="flex items-center justify-between px-2 mb-4">
-                <div className="flex items-center gap-2 text-teal-400">
+                <div className="flex items-center gap-2 text-teal-600 dark:text-teal-400">
                   <Box className="h-5 w-5" />
-                  <h2 className="text-xl font-bold text-white tracking-wide">Exibição 3D Coverflow do Inventário</h2>
+                  <h2 className="text-xl font-bold text-surface-900 dark:text-white tracking-wide">Exibição 3D Coverflow do Inventário</h2>
                 </div>
-                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30">
+                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-teal-500/10 dark:bg-teal-500/20 text-teal-700 dark:text-teal-300 border border-teal-500/30">
                   {slides.length} itens cadastrados
                 </span>
               </div>
@@ -372,16 +372,16 @@ export default function InsightsPage() {
 
             {/* Active Item Quick Detail Card */}
             {currentItem && (
-              <Card className="p-6 border border-teal-500/20 bg-surface-900 text-white animate-slide-up">
+              <Card className="p-6 border border-teal-500/20 bg-white dark:bg-surface-900 text-surface-900 dark:text-white animate-slide-up shadow-lg">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="space-y-1">
                     <div className="flex items-center gap-3">
-                      <h3 className="text-2xl font-bold text-teal-300">{currentItem.material}</h3>
+                      <h3 className="text-2xl font-bold text-teal-600 dark:text-teal-300">{currentItem.material}</h3>
                       <Badge variant={currentItem.estado === "Conservado" ? "success" : "warning"}>
                         {currentItem.estado}
                       </Badge>
                     </div>
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-surface-300 pt-1">
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-surface-600 dark:text-surface-300 pt-1">
                       <span><strong>Quantidade:</strong> {currentItem.quantidade}</span>
                       <span>•</span>
                       <span><strong>Validade:</strong> {currentItem.validade || "Não consta"}</span>
@@ -393,7 +393,7 @@ export default function InsightsPage() {
                   <div className="flex items-center gap-3">
                     <Button
                       variant="outline"
-                      className="text-teal-300 border-teal-500/30 hover:bg-teal-950/50"
+                      className="text-teal-600 dark:text-teal-300 border-teal-500/30 hover:bg-teal-50 dark:hover:bg-teal-950/50"
                       onClick={() => handleEdit(currentItem)}
                     >
                       <Edit className="h-4 w-4 mr-2" />
@@ -401,7 +401,7 @@ export default function InsightsPage() {
                     </Button>
                     <Button
                       variant="outline"
-                      className="text-red-400 border-red-500/30 hover:bg-red-950/50"
+                      className="text-red-600 dark:text-red-400 border-red-500/30 hover:bg-red-50 dark:hover:bg-red-950/50"
                       onClick={() => {
                         setSelectedMaterial(currentItem);
                         setIsConfirmOpen(true);
