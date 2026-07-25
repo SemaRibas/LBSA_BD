@@ -29,17 +29,15 @@ async function getSheet<T>(sheetName: string): Promise<{ sheet: any; rows: T[] }
   
   let sheet = doc.sheetsByTitle[sheetName];
   
-  // Criar planilha se nao existir
   if (!sheet) {
     sheet = await doc.addSheet({ title: sheetName });
   }
 
   await sheet.loadHeaderRow().catch(() => {});
   
-  const rows = await sheet.getRows();
+  const rawRows = await sheet.getRows();
   
-  // Mapear dados
-  const data = rows.map((row: any) => {
+  const data = rawRows.map((row: any) => {
     const rawObj = typeof row.toObject === "function" ? row.toObject() : {};
     const obj: any = { ...rawObj };
     
@@ -54,11 +52,83 @@ async function getSheet<T>(sheetName: string): Promise<{ sheet: any; rows: T[] }
       });
     }
     
-    obj._rowNumber = row.rowNumber ? row.rowNumber - 2 : undefined;
     return obj;
   }) as T[];
   
   return { sheet, rows: data };
+}
+
+async function addRow<T extends Record<string, any>>(sheetName: string, item: T): Promise<T> {
+  const doc = await getDoc();
+  let sheet = doc.sheetsByTitle[sheetName];
+  
+  if (!sheet) {
+    sheet = await doc.addSheet({
+      title: sheetName,
+      headerValues: Object.keys(item).filter((k) => !k.startsWith("_")),
+    });
+  }
+
+  const cleanData: Record<string, any> = {};
+  Object.keys(item).forEach((key) => {
+    if (!key.startsWith("_") && item[key] !== undefined) {
+      cleanData[key] = item[key];
+    }
+  });
+
+  await sheet.addRow(cleanData);
+  return item;
+}
+
+async function updateRow<T extends Record<string, any>>(
+  sheetName: string,
+  id: string,
+  updates: Partial<T>
+): Promise<T | null> {
+  const doc = await getDoc();
+  const sheet = doc.sheetsByTitle[sheetName];
+  if (!sheet) return null;
+
+  const rawRows = await sheet.getRows();
+  const targetRow = rawRows.find((r: any) => {
+    const rId = typeof r.get === "function" ? r.get("id") : r.id;
+    return rId === id;
+  });
+
+  if (!targetRow) return null;
+
+  Object.keys(updates).forEach((key) => {
+    if (!key.startsWith("_") && key !== "id") {
+      const val = (updates as any)[key];
+      if (typeof targetRow.set === "function") {
+        targetRow.set(key, val ?? "");
+      } else {
+        (targetRow as any)[key] = val ?? "";
+      }
+    }
+  });
+
+  await targetRow.save();
+  
+  const updatedObj = typeof targetRow.toObject === "function" ? targetRow.toObject() : {};
+  return updatedObj as T;
+}
+
+async function deleteRow(sheetName: string, id: string): Promise<boolean> {
+  const doc = await getDoc();
+  const sheet = doc.sheetsByTitle[sheetName];
+  if (!sheet) return false;
+
+  const rawRows = await sheet.getRows();
+  const targetRow = rawRows.find((r: any) => {
+    const rId = typeof r.get === "function" ? r.get("id") : r.id;
+    return rId === id;
+  });
+
+  if (!targetRow) return false;
+
+  await targetRow.delete();
+  return true;
 }
 
 async function setSheetData<T extends Record<string, any>>(
@@ -70,7 +140,6 @@ async function setSheetData<T extends Record<string, any>>(
   let sheet = doc.sheetsByTitle[sheetName];
   
   if (!sheet) {
-    // Criar planilha com headers
     if (data.length > 0) {
       sheet = await doc.addSheet({ 
         title: sheetName,
@@ -81,13 +150,11 @@ async function setSheetData<T extends Record<string, any>>(
     }
   }
   
-  // Limpar dados existentes (manter header)
   const existingRows = await sheet.getRows();
   if (existingRows.length > 0) {
     await sheet.clearRows({ start: 0, end: existingRows.length });
   }
   
-  // Adicionar novos dados
   if (data.length > 0) {
     const cleanData = data.map(item => {
       const clean: Record<string, any> = {};
@@ -106,4 +173,4 @@ function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
 }
 
-export { getDoc, getSheet, setSheetData, generateId };
+export { getDoc, getSheet, addRow, updateRow, deleteRow, setSheetData, generateId };

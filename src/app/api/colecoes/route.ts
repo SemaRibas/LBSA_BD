@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSheet, setSheetData, generateId } from "@/lib/excel";
+import { getSheet, addRow, updateRow, deleteRow, generateId } from "@/lib/excel";
 import { Colecao } from "@/types";
 
 const SHEET_NAME = "Colecoes";
@@ -47,8 +47,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { rows: colecoes } = await getSheet<Colecao>(SHEET_NAME);
-
     const newColecao: Colecao = {
       id: generateId(),
       numeroTombo,
@@ -70,8 +68,7 @@ export async function POST(request: NextRequest) {
       condicaoRecipiente: condicaoRecipiente || "FAVORAVEL",
     };
 
-    colecoes.push(newColecao);
-    await setSheetData(SHEET_NAME, colecoes);
+    await addRow(SHEET_NAME, newColecao);
 
     return NextResponse.json(newColecao, { status: 201 });
   } catch (error) {
@@ -95,20 +92,16 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const { rows: colecoes } = await getSheet<Colecao>(SHEET_NAME);
-    const index = colecoes.findIndex((c) => c.id === id);
+    const updated = await updateRow<Colecao>(SHEET_NAME, id, updates);
 
-    if (index === -1) {
+    if (!updated) {
       return NextResponse.json(
         { error: "Colecao nao encontrada" },
         { status: 404 }
       );
     }
 
-    colecoes[index] = { ...colecoes[index], ...updates };
-    await setSheetData(SHEET_NAME, colecoes);
-
-    return NextResponse.json(colecoes[index]);
+    return NextResponse.json(updated);
   } catch (error) {
     console.error("Erro ao atualizar colecao:", error);
     return NextResponse.json(
@@ -130,17 +123,14 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const { rows: colecoes } = await getSheet<Colecao>(SHEET_NAME);
-    const filtered = colecoes.filter((c) => c.id !== id);
+    const deleted = await deleteRow(SHEET_NAME, id);
 
-    if (filtered.length === colecoes.length) {
+    if (!deleted) {
       return NextResponse.json(
         { error: "Colecao nao encontrada" },
         { status: 404 }
       );
     }
-
-    await setSheetData(SHEET_NAME, filtered);
 
     return NextResponse.json({ success: true });
   } catch (error) {
