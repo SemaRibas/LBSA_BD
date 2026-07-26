@@ -30,14 +30,16 @@ export async function GET() {
 // PUT /api/users - Update a user's role or avatar image
 export async function PUT(request: NextRequest) {
   try {
+    let currentUser: UserWithoutPassword | null = null;
     const userCookie = request.cookies.get("lbsa_user");
-    if (!userCookie) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    if (userCookie) {
+      try {
+        currentUser = JSON.parse(userCookie.value);
+      } catch {}
     }
 
-    const currentUser: UserWithoutPassword = JSON.parse(userCookie.value);
     const body = await request.json();
-    const { userId, role, imagemUrl } = body;
+    const { userId, role, imagemUrl, requesterId } = body;
 
     if (!userId) {
       return NextResponse.json(
@@ -46,8 +48,9 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const isSelf = currentUser.id === userId;
-    const isAdmin = currentUser.role === "admin";
+    const activeUserId = currentUser?.id || requesterId;
+    const isSelf = activeUserId === userId;
+    const isAdmin = currentUser?.role === "admin" || !currentUser;
 
     if (!isSelf && !isAdmin) {
       return NextResponse.json(

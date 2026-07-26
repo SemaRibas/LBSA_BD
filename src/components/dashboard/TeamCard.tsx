@@ -90,18 +90,29 @@ export function TeamCard({ users, currentUser, onUserRoleChange, onUserProfileUp
   const handleSaveAvatar = async (userId: string, newImagemUrl: string | undefined) => {
     setUpdatingUserId(userId);
     try {
+      const avatarValue = newImagemUrl || "";
       const res = await fetch("/api/users", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, imagemUrl: newImagemUrl || "" }),
+        body: JSON.stringify({ userId, imagemUrl: avatarValue, requesterId: currentUser?.id }),
       });
 
       if (res.ok) {
         const updated = await res.json();
         toast.success("Foto de Perfil Atualizada!", `A foto de ${activeUser.name} foi atualizada com sucesso.`);
+        
+        // Save local backup in localStorage
+        try {
+          if (avatarValue) {
+            localStorage.setItem(`lbsa_user_avatar_${userId}`, avatarValue);
+          } else {
+            localStorage.removeItem(`lbsa_user_avatar_${userId}`);
+          }
+        } catch {}
+
         setLocalUsers((prev) => {
           const list = prev.length > 0 ? prev : displayUsers;
-          return list.map((u) => (u.id === userId ? { ...u, imagemUrl: newImagemUrl } : u));
+          return list.map((u) => (u.id === userId ? { ...u, imagemUrl: avatarValue } : u));
         });
         if (onUserProfileUpdate) onUserProfileUpdate(updated);
         setIsEditProfileOpen(false);
@@ -153,7 +164,13 @@ export function TeamCard({ users, currentUser, onUserRoleChange, onUserProfileUp
 
   const carouselItems: CarouselItem[] = useMemo(() => {
     return displayUsers.map((user) => {
-      const avatarUrl = user.imagemUrl || "";
+      let savedAvatar: string | null = null;
+      if (typeof window !== "undefined") {
+        try {
+          savedAvatar = localStorage.getItem(`lbsa_user_avatar_${user.id}`);
+        } catch {}
+      }
+      const avatarUrl = user.imagemUrl || savedAvatar || "";
       const roleConfig = getRoleBadgeConfig(user.role || "pesquisador");
 
       return {

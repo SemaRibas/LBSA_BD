@@ -1,14 +1,65 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { Upload, X, Image as ImageIcon, Link as LinkIcon } from "lucide-react";
-import { Button } from "./Button";
+import { Upload, X, Link as LinkIcon } from "lucide-react";
 
 interface ImageUploadInputProps {
   label?: string;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  maxWidth?: number;
+  maxHeight?: number;
+}
+
+// Compress base64 images so they fit safely within database cell limits (e.g. Google Sheets 50k char limit)
+export function compressBase64Image(
+  dataUrl: string,
+  maxWidth = 350,
+  maxHeight = 350,
+  quality = 0.75
+): Promise<string> {
+  return new Promise((resolve) => {
+    if (!dataUrl || !dataUrl.startsWith("data:image")) {
+      return resolve(dataUrl);
+    }
+
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+
+      if (width > maxWidth || height > maxHeight) {
+        if (width > height) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        } else {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return resolve(dataUrl);
+
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Convert to compressed jpeg
+      const compressedDataUrl = canvas.toDataURL("image/jpeg", quality);
+      resolve(compressedDataUrl);
+    };
+
+    img.onerror = () => {
+      resolve(dataUrl);
+    };
+
+    img.src = dataUrl;
+  });
 }
 
 export function ImageUploadInput({
@@ -16,27 +67,40 @@ export function ImageUploadInput({
   value,
   onChange,
   placeholder = "Cole a URL da imagem ou escolha um arquivo",
+  maxWidth = 350,
+  maxHeight = 350,
 }: ImageUploadInputProps) {
   const [showUrlInput, setShowUrlInput] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check size limit (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert("A imagem selecionada é muito grande. Escolha uma imagem de até 5MB.");
+    if (file.size > 10 * 1024 * 1024) {
+      alert("A imagem selecionada é muito grande. Escolha uma imagem de até 10MB.");
       return;
     }
 
+    setIsCompressing(true);
     const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64Str = event.target?.result as string;
-      if (base64Str) {
-        onChange(base64Str);
+    reader.onload = async (event) => {
+      const rawBase64 = event.target?.result as string;
+      if (rawBase64) {
+        try {
+          const compressed = await compressBase64Image(rawBase64, maxWidth, maxHeight, 0.75);
+          onChange(compressed);
+        } catch {
+          onChange(rawBase64);
+        } finally {
+          setIsCompressing(false);
+        }
+      } else {
+        setIsCompressing(false);
       }
     };
+    reader.onerror = () => setIsCompressing(false);
     reader.readAsDataURL(file);
   };
 
@@ -58,14 +122,13 @@ export function ImageUploadInput({
       {/* If Image is present (Preview State) */}
       {value ? (
         <div className="relative group rounded-2xl overflow-hidden border border-surface-200 dark:border-surface-700 bg-surface-100 dark:bg-surface-950 p-2 flex items-center gap-3">
-          <div className="relative h-20 w-28 rounded-xl overflow-hidden shrink-0 border border-surface-300 dark:border-surface-700 bg-surface-200 dark:bg-surface-900">
+          <div className="relative h-20 w-28 rounded-xl overflow-hidden shrink-0 border border-surface-300 dark:border-surface-700 bg-surface-200 dark:bg-surface-900 flex items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={value}
               alt="Pré-visualização"
               className="w-full h-full object-cover"
               onError={(e) => {
-                // If broken link
                 (e.target as HTMLElement).style.display = "none";
               }}
             />
@@ -73,10 +136,10 @@ export function ImageUploadInput({
 
           <div className="flex-1 min-w-0 space-y-1">
             <span className="text-xs font-bold text-surface-900 dark:text-surface-100 block truncate">
-              Imagem Carregada
+              Imagem Selecionada
             </span>
             <span className="text-[10px] text-surface-500 dark:text-surface-400 block truncate font-mono">
-              {value.startsWith("data:") ? "Arquivo local carregado" : value}
+              {value.startsWith("data:") ? "Arquivo local otimizado" : value}
             </span>
             <div className="flex items-center gap-2 pt-1">
               <button
@@ -110,7 +173,7 @@ export function ImageUploadInput({
         /* Empty State: File Picker & URL Option */
         <div className="space-y-2">
           <div
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => !isCompressing && fileInputRef.current?.click()}
             className="border-2 border-dashed border-surface-300 dark:border-surface-700 hover:border-teal-500 dark:hover:border-teal-400 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all bg-surface-50/50 dark:bg-surface-800/30 hover:bg-teal-50/30 dark:hover:bg-teal-950/20 group"
           >
             <div className="p-2.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 group-hover:scale-110 transition-transform">
@@ -118,10 +181,10 @@ export function ImageUploadInput({
             </div>
             <div className="text-center">
               <span className="font-bold text-xs text-surface-800 dark:text-surface-200 block">
-                Escolher imagem do seu computador
+                {isCompressing ? "Processando imagem..." : "Escolher foto do seu computador"}
               </span>
               <span className="text-[10px] text-surface-500 dark:text-surface-400">
-                Formatos aceitos: JPG, PNG, WEBP, SVG (máx 5MB)
+                Formatos aceitos: JPG, PNG, WEBP, SVG (otimizado automaticamente)
               </span>
             </div>
           </div>
