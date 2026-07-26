@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
           id: item.id || generateId(),
           material: String(item.material || "").trim(),
           quantidade: String(item.quantidade || "1").trim(),
-          estado: String(item.estado || "Conservado").trim(),
+          estado: (item.estado as any) || "Conservado",
           validade: String(item.validade || "Não consta").trim(),
           observacoes: String(item.observacoes || "").trim(),
           imagemUrl: String(item.imagemUrl || "").trim(),
