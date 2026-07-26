@@ -85,10 +85,29 @@ Por favor, apresente um resumo executivo rápido dos itens cadastrados, destacan
   }
 }
 
+// GET /api/ai-agent - Health check status
+export async function GET() {
+  return NextResponse.json({
+    status: "online",
+    agent: "Agente LBSA IA",
+    hasApiKey: !!GEMINI_API_KEY,
+  });
+}
+
+// POST /api/ai-agent - Process chat or auto-register Excel items
 export async function POST(request: NextRequest) {
   try {
+    let body: any = {};
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Corpo da requisição em formato JSON inválido." },
+        { status: 400 }
+      );
+    }
+
     const currentUser = getCurrentUser(request);
-    const body = await request.json();
     const { action, prompt, rows } = body;
 
     // Chat / Questions Action
@@ -111,55 +130,63 @@ export async function POST(request: NextRequest) {
 
       if (detectedType === "colecoes") {
         for (const row of rows) {
-          const tombo = String(row.numeroTombo || row["Número Tombo"] || row.tombo || "").trim();
-          if (!tombo) continue;
+          try {
+            const tombo = String(row.numeroTombo || row["Número Tombo"] || row.tombo || row.Tombo || "").trim();
+            if (!tombo) continue;
 
-          const newColecao: Colecao = {
-            id: generateId(),
-            numeroTombo: tombo,
-            identificacaoBasica: String(row.identificacaoBasica || row["Identificação"] || row.especie || "").trim(),
-            clado: String(row.clado || "").trim(),
-            filo: String(row.filo || "").trim(),
-            subfilo: String(row.subfilo || "").trim(),
-            classe: String(row.classe || "").trim(),
-            determinador: String(row.determinador || "").trim(),
-            numeroExemplares: String(row.numeroExemplares || row.exemplares || "1").trim(),
-            localidade: String(row.localidade || "").trim(),
-            coletor: String(row.coletor || "").trim(),
-            dataColeta: String(row.dataColeta || row["Data Coleta"] || "").trim(),
-            fonte: String(row.fonte || "").trim(),
-            condicaoFrasco: (row.condicaoFrasco || "RAZOAVEL") as any,
-            observacoes: String(row.observacoes || "").trim(),
-            estagiarioResponsavel: String(row.estagiarioResponsavel || "").trim(),
-            status: (row.status || "TRANSPARENTE") as any,
-            condicaoRecipiente: (row.condicaoRecipiente || "FAVORAVEL") as any,
-            imagemUrl: String(row.imagemUrl || "").trim(),
-            createdBy: currentUser?.email || "agente.ia@lbsa.uesb.br",
-            creatorName: currentUser ? `${currentUser.name} (via Agente IA)` : "Agente LBSA IA",
-          };
+            const newColecao: Colecao = {
+              id: generateId(),
+              numeroTombo: tombo,
+              identificacaoBasica: String(row.identificacaoBasica || row["Identificação"] || row.especie || row["Espécie"] || "").trim(),
+              clado: String(row.clado || row.Clado || "").trim(),
+              filo: String(row.filo || row.Filo || "").trim(),
+              subfilo: String(row.subfilo || row.Subfilo || "").trim(),
+              classe: String(row.classe || row.Classe || "").trim(),
+              determinador: String(row.determinador || row.Determinador || "").trim(),
+              numeroExemplares: String(row.numeroExemplares || row.exemplares || row.Exemplares || "1").trim(),
+              localidade: String(row.localidade || row.Localidade || "").trim(),
+              coletor: String(row.coletor || row.Coletor || "").trim(),
+              dataColeta: String(row.dataColeta || row["Data Coleta"] || row.data || "").trim(),
+              fonte: String(row.fonte || row.Fonte || "").trim(),
+              condicaoFrasco: (row.condicaoFrasco || "RAZOAVEL") as any,
+              observacoes: String(row.observacoes || row["Observações"] || "").trim(),
+              estagiarioResponsavel: String(row.estagiarioResponsavel || "").trim(),
+              status: (row.status || "TRANSPARENTE") as any,
+              condicaoRecipiente: (row.condicaoRecipiente || "FAVORAVEL") as any,
+              imagemUrl: String(row.imagemUrl || "").trim(),
+              createdBy: currentUser?.email || "agente.ia@lbsa.uesb.br",
+              creatorName: currentUser ? `${currentUser.name} (via Agente IA)` : "Agente LBSA IA",
+            };
 
-          await addRow("Colecoes", newColecao);
-          registeredItems.push(newColecao);
+            await addRow("Colecoes", newColecao);
+            registeredItems.push(newColecao);
+          } catch (errRow) {
+            console.error("Erro ao cadastrar linha de Coleção:", errRow);
+          }
         }
       } else {
         for (const row of rows) {
-          const matName = String(row.material || row["Material"] || row.nome || "").trim();
-          if (!matName) continue;
+          try {
+            const matName = String(row.material || row["Material"] || row.nome || row.Nome || "").trim();
+            if (!matName) continue;
 
-          const newMaterial: Material = {
-            id: generateId(),
-            material: matName,
-            quantidade: String(row.quantidade || row["Quantidade"] || "1").trim(),
-            estado: (row.estado || "Conservado") as any,
-            validade: String(row.validade || row["Validade"] || "Não consta").trim(),
-            observacoes: String(row.observacoes || "").trim(),
-            imagemUrl: String(row.imagemUrl || "").trim(),
-            createdBy: currentUser?.email || "agente.ia@lbsa.uesb.br",
-            creatorName: currentUser ? `${currentUser.name} (via Agente IA)` : "Agente LBSA IA",
-          };
+            const newMaterial: Material = {
+              id: generateId(),
+              material: matName,
+              quantidade: String(row.quantidade || row["Quantidade"] || "1").trim(),
+              estado: (row.estado || "Conservado") as any,
+              validade: String(row.validade || row["Validade"] || "Não consta").trim(),
+              observacoes: String(row.observacoes || row["Observações"] || "").trim(),
+              imagemUrl: String(row.imagemUrl || "").trim(),
+              createdBy: currentUser?.email || "agente.ia@lbsa.uesb.br",
+              creatorName: currentUser ? `${currentUser.name} (via Agente IA)` : "Agente LBSA IA",
+            };
 
-          await addRow("Materiais", newMaterial);
-          registeredItems.push(newMaterial);
+            await addRow("Materiais", newMaterial);
+            registeredItems.push(newMaterial);
+          } catch (errRow) {
+            console.error("Erro ao cadastrar linha de Material:", errRow);
+          }
         }
       }
 

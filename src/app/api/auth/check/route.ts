@@ -5,12 +5,12 @@ export async function GET(request: NextRequest) {
     const userCookie = request.cookies.get("lbsa_user");
 
     if (!userCookie) {
-      return NextResponse.json({ user: null }, { status: 401 });
+      return NextResponse.json({ user: null, authenticated: false }, { status: 200 });
     }
 
     const user = JSON.parse(userCookie.value);
-    return NextResponse.json({ user });
+    return NextResponse.json({ user, authenticated: true }, { status: 200 });
   } catch {
-    return NextResponse.json({ user: null }, { status: 401 });
+    return NextResponse.json({ user: null, authenticated: false }, { status: 200 });
   }
 }
