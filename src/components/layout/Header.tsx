@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { LogOut, User as UserIcon, Users, ChevronDown, Shield, Eye, Microscope } from "lucide-react";
+import { LogOut, User as UserIcon, Users, ChevronDown, Shield, Eye, Microscope, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserWithoutPassword, UserRole } from "@/types";
 import { getFirstAndSurnameInitials } from "@/lib/userUtils";
+import { AIAgentWidget } from "@/components/ui/AIAgentWidget";
 
 interface HeaderProps {
   title: string;
@@ -19,6 +20,7 @@ export function Header({ title, className }: HeaderProps) {
   const [allUsers, setAllUsers] = useState<UserWithoutPassword[]>([]);
   const [presenceOpen, setPresenceOpen] = useState(false);
   const [presenceTick, setPresenceTick] = useState(0);
+  const [isAIAgentOpen, setIsAIAgentOpen] = useState(false);
 
   // Fetch team users to compute presence status
   useEffect(() => {
@@ -123,6 +125,17 @@ export function Header({ title, className }: HeaderProps) {
 
       {/* Right Area: Real-Time Presence & User Account */}
       <div className="flex items-center gap-2.5 self-end sm:self-center max-w-full flex-wrap">
+        {/* Agente de IA Button */}
+        <button
+          type="button"
+          onClick={() => setIsAIAgentOpen(!isAIAgentOpen)}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-gradient-to-r from-teal-600/90 to-emerald-600/90 hover:from-teal-500 hover:to-emerald-500 text-white text-xs font-extrabold shadow-md backdrop-blur-md transition-all active:scale-95 border border-white/20"
+          title="Abrir Agente de IA para cadastro automático via Excel"
+        >
+          <Sparkles className="h-4 w-4 text-amber-300 animate-pulse" />
+          <span className="hidden xs:inline">Agente IA</span>
+        </button>
+
         {/* Presence Status Widget Button */}
         <div className="relative">
           <button
@@ -313,6 +326,16 @@ export function Header({ title, className }: HeaderProps) {
           </div>
         )}
       </div>
+
+      {/* Embedded Floating AI Agent Widget */}
+      <AIAgentWidget
+        isOpen={isAIAgentOpen}
+        onClose={() => setIsAIAgentOpen(false)}
+        onDataRegistered={() => {
+          // Trigger page update if on dashboard/colecoes/materiais
+          window.dispatchEvent(new Event("lbsa_data_registered"));
+        }}
+      />
     </header>
   );
 }

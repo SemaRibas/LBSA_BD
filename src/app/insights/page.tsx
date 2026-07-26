@@ -89,6 +89,10 @@ export default function InsightsPage() {
       return;
     }
     fetchMateriais();
+
+    const handleAIRegistration = () => fetchMateriais();
+    window.addEventListener("lbsa_data_registered", handleAIRegistration);
+    return () => window.removeEventListener("lbsa_data_registered", handleAIRegistration);
   }, [authUser, authLoading, router]);
 
   const fetchMateriais = async () => {

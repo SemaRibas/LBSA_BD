@@ -110,6 +110,10 @@ export default function ChannelsPage() {
       return;
     }
     fetchColecoes();
+
+    const handleAIRegistration = () => fetchColecoes();
+    window.addEventListener("lbsa_data_registered", handleAIRegistration);
+    return () => window.removeEventListener("lbsa_data_registered", handleAIRegistration);
   }, [authUser, authLoading, router]);
 
   const fetchColecoes = async () => {
