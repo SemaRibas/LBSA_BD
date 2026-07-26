@@ -8,6 +8,7 @@ import { MetricCards } from "@/components/dashboard/MetricCards";
 import { ChartCard } from "@/components/dashboard/ChartCard";
 import { ActivityCard } from "@/components/dashboard/ActivityCard";
 import { TeamCard } from "@/components/dashboard/TeamCard";
+import { StatusDistributionCard } from "@/components/dashboard/StatusDistributionCard";
 import { Card } from "@/components/ui/Card";
 import ElectricBorder from "@/components/ui/ElectricBorder";
 import { Material, Colecao, UserWithoutPassword, UserRole } from "@/types";
@@ -455,41 +456,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Coleções por Status Breakdown */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-3">
-            <Card className="animate-slide-up bg-white dark:bg-surface-900 border border-surface-200 dark:border-teal-500/20" style={{ animationDelay: "700ms" }}>
-              <h3 className="text-lg font-bold text-surface-900 dark:text-surface-100 mb-4">
-                Coleções por Status
-              </h3>
-              <div className="space-y-3">
-                {[
-                  { label: "Líquido Turvo", count: colecoes.filter(c => c.status === "LIQUIDO_TURVO").length, color: "bg-blue-500" },
-                  { label: "Transparente", count: colecoes.filter(c => c.status === "TRANSPARENTE").length, color: "bg-green-500" },
-                  { label: "Frasco Crítico", count: colecoes.filter(c => c.condicaoFrasco === "CRITICO").length, color: "bg-red-500" },
-                  { label: "Frasco Razoável", count: colecoes.filter(c => c.condicaoFrasco === "RAZOAVEL").length, color: "bg-amber-500" },
-                ].map((item) => {
-                  const totalCount = colecoes.length || 1;
-                  const percent = Math.round((item.count / totalCount) * 100);
-                  return (
-                    <div key={item.label} className="flex items-center gap-4">
-                      <span className="text-xs font-semibold text-surface-600 dark:text-surface-400 w-32">
-                        {item.label}
-                      </span>
-                      <div className="flex-1 h-2.5 bg-surface-100 dark:bg-surface-800 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full ${item.color} rounded-full transition-all duration-1000`}
-                          style={{ width: `${percent}%` }}
-                        />
-                      </div>
-                      <span className="text-xs font-bold text-surface-900 dark:text-surface-100 w-12 text-right">
-                        {item.count} ({percent}%)
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </Card>
-          </div>
+        <div className="mb-6">
+          <StatusDistributionCard colecoes={colecoes} />
         </div>
       </main>
     </div>
