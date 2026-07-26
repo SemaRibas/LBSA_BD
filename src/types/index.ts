@@ -7,6 +7,7 @@ export interface User {
   password?: string;
   role: UserRole;
   createdAt: string;
+  imagemUrl?: string;
 }
 
 export interface UserWithoutPassword extends Omit<User, "password"> {}

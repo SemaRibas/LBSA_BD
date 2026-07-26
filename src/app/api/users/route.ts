@@ -27,7 +27,7 @@ export async function GET() {
   }
 }
 
-// PUT /api/users - Update a user's role (Admin only)
+// PUT /api/users - Update a user's role or avatar image
 export async function PUT(request: NextRequest) {
   try {
     const userCookie = request.cookies.get("lbsa_user");
@@ -36,32 +36,50 @@ export async function PUT(request: NextRequest) {
     }
 
     const currentUser: UserWithoutPassword = JSON.parse(userCookie.value);
-    if (currentUser.role !== "admin") {
+    const body = await request.json();
+    const { userId, role, imagemUrl } = body;
+
+    if (!userId) {
       return NextResponse.json(
-        { error: "Apenas Administradores podem alterar funções de usuários." },
+        { error: "ID do usuário é obrigatório." },
+        { status: 400 }
+      );
+    }
+
+    const isSelf = currentUser.id === userId;
+    const isAdmin = currentUser.role === "admin";
+
+    if (!isSelf && !isAdmin) {
+      return NextResponse.json(
+        { error: "Sem permissão para alterar este perfil." },
         { status: 403 }
       );
     }
 
-    const body = await request.json();
-    const { userId, role } = body;
+    const updateData: Partial<User> = {};
 
-    if (!userId || !role) {
-      return NextResponse.json(
-        { error: "ID do usuário e função são obrigatórios." },
-        { status: 400 }
-      );
+    if (role !== undefined) {
+      if (!isAdmin) {
+        return NextResponse.json(
+          { error: "Apenas Administradores podem alterar funções de usuários." },
+          { status: 403 }
+        );
+      }
+      const validRoles: UserRole[] = ["admin", "pesquisador", "monitor"];
+      if (!validRoles.includes(role)) {
+        return NextResponse.json(
+          { error: "Função inválida." },
+          { status: 400 }
+        );
+      }
+      updateData.role = role;
     }
 
-    const validRoles: UserRole[] = ["admin", "pesquisador", "monitor"];
-    if (!validRoles.includes(role)) {
-      return NextResponse.json(
-        { error: "Função inválida." },
-        { status: 400 }
-      );
+    if (imagemUrl !== undefined) {
+      updateData.imagemUrl = imagemUrl;
     }
 
-    const updated = await updateRow<User>(SHEET_NAME, userId, { role });
+    const updated = await updateRow<User>(SHEET_NAME, userId, updateData);
     if (!updated) {
       return NextResponse.json(
         { error: "Usuário não encontrado." },
@@ -72,9 +90,9 @@ export async function PUT(request: NextRequest) {
     const { password: _, ...updatedWithoutPassword } = updated;
     return NextResponse.json(updatedWithoutPassword);
   } catch (error) {
-    console.error("Erro ao atualizar função do usuário:", error);
+    console.error("Erro ao atualizar usuário:", error);
     return NextResponse.json(
-      { error: "Erro ao atualizar função do usuário" },
+      { error: "Erro ao atualizar usuário" },
       { status: 500 }
     );
   }

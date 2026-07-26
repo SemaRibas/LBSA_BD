@@ -9,6 +9,7 @@ import {
     type CSSProperties,
     ReactNode,
 } from "react";
+import { getFirstAndSurnameInitials } from "@/lib/userUtils";
 
 export type ImageValue = string | { src?: string; srcSet?: string; alt?: string };
 
@@ -66,38 +67,14 @@ const mkItem = ([src, label]: [string, string]): CarouselItem => ({
 
 const DEFAULT_ITEMS: CarouselItem[] = (
     [
-        [
-            "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80",
-            "Sophia Benett",
-        ],
-        [
-            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80",
-            "Isabella Foster",
-        ],
-        [
-            "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=800&q=80",
-            "Grace Turner",
-        ],
-        [
-            "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80",
-            "Olivia Parker",
-        ],
-        [
-            "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=800&q=80",
-            "Lucas Turner",
-        ],
-        [
-            "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80",
-            "Emma Collins",
-        ],
-        [
-            "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80",
-            "Mia Carter",
-        ],
-        [
-            "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=800&q=80",
-            "Ella Morgan",
-        ],
+        ["", "Sophia Benett"],
+        ["", "Isabella Foster"],
+        ["", "Grace Turner"],
+        ["", "Olivia Parker"],
+        ["", "Lucas Turner"],
+        ["", "Emma Collins"],
+        ["", "Mia Carter"],
+        ["", "Ella Morgan"],
     ] as [string, string][]
 ).map(mkItem);
 
@@ -272,6 +249,8 @@ export default function KlarnaCarousel(props: KlarnaCarouselProps) {
     };
 
     const currentItem = list[active];
+    const currentImgSrc = srcOf(currentItem?.image);
+    const initials = getFirstAndSurnameInitials(currentItem?.label || "");
 
     return (
         <div
@@ -325,9 +304,9 @@ export default function KlarnaCarousel(props: KlarnaCarouselProps) {
                     >
                         {currentItem?.customContent ? (
                             currentItem.customContent
-                        ) : srcOf(currentItem?.image) ? (
+                        ) : currentImgSrc ? (
                             <img
-                                src={srcOf(currentItem?.image)}
+                                src={currentImgSrc}
                                 alt={currentItem?.label || ""}
                                 draggable={false}
                                 style={{
@@ -338,13 +317,18 @@ export default function KlarnaCarousel(props: KlarnaCarouselProps) {
                                 }}
                             />
                         ) : (
-                            <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-teal-500 to-teal-800 text-white p-6 text-center">
-                                <div className="w-24 h-24 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center text-3xl font-black mb-3 border border-white/20 shadow-md">
-                                    {currentItem?.label ? currentItem.label.slice(0, 2).toUpperCase() : "LBSA"}
+                            <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-teal-600 via-teal-700 to-surface-900 text-white p-6 text-center shadow-inner relative overflow-hidden">
+                                <div className="absolute -top-12 -right-12 w-40 h-40 bg-teal-400/20 rounded-full blur-2xl pointer-events-none" />
+                                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center text-3xl sm:text-4xl font-black mb-3 border-2 border-white/30 shadow-xl tracking-wider">
+                                    {initials}
                                 </div>
-                                <div className="font-extrabold text-lg">{currentItem?.label}</div>
+                                <div className="font-extrabold text-lg sm:text-xl tracking-tight text-white drop-shadow-md">
+                                    {currentItem?.label}
+                                </div>
                                 {currentItem?.sublabel && (
-                                    <div className="text-xs text-teal-100 mt-1">{currentItem.sublabel}</div>
+                                    <div className="text-xs text-teal-100/90 font-medium mt-1 truncate max-w-[85%]">
+                                        {currentItem.sublabel}
+                                    </div>
                                 )}
                             </div>
                         )}
@@ -411,6 +395,8 @@ export default function KlarnaCarousel(props: KlarnaCarouselProps) {
                         slotStyle(slot);
                     const isActive = itemIdx === active;
                     const item = list[itemIdx];
+                    const itemImgSrc = srcOf(item?.buttonImage);
+                    const itemInitials = getFirstAndSurnameInitials(item?.label || "");
 
                     return (
                         <div
@@ -443,9 +429,9 @@ export default function KlarnaCarousel(props: KlarnaCarouselProps) {
                                 }}
                                 onClick={() => select(itemIdx)}
                             >
-                                {srcOf(item?.buttonImage) ? (
+                                {itemImgSrc ? (
                                     <img
-                                        src={srcOf(item?.buttonImage)}
+                                        src={itemImgSrc}
                                         alt={item?.label || ""}
                                         draggable={false}
                                         style={{
@@ -456,8 +442,8 @@ export default function KlarnaCarousel(props: KlarnaCarouselProps) {
                                         }}
                                     />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center font-black text-xs bg-gradient-to-br from-teal-500 to-emerald-600 text-white">
-                                        {item?.label ? item.label.slice(0, 2).toUpperCase() : "U"}
+                                    <div className="w-full h-full flex items-center justify-center font-black text-xs bg-gradient-to-br from-teal-500 to-emerald-700 text-white shadow-inner tracking-wider">
+                                        {itemInitials}
                                     </div>
                                 )}
                             </div>

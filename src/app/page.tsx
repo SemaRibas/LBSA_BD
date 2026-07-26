@@ -293,6 +293,24 @@ export default function DashboardPage() {
           </Card>
         </div>
 
+        {/* Integrantes da Equipe e Funções (Logo Abaixo do Hero) */}
+        <div className="mb-6">
+          <TeamCard
+            users={users}
+            currentUser={currentUser}
+            onUserRoleChange={(userId, newRole) => {
+              setUsers((prev) =>
+                prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
+              );
+            }}
+            onUserProfileUpdate={(updatedUser) => {
+              setUsers((prev) =>
+                prev.map((u) => (u.id === updatedUser.id ? { ...u, ...updatedUser } : u))
+              );
+            }}
+          />
+        </div>
+
         {/* Metric cards */}
         <div className="mb-6">
           <MetricCards metrics={metrics} />
@@ -358,19 +376,6 @@ export default function DashboardPage() {
             <ChartCard chartData={chartData} />
           </div>
           <ActivityCard activities={recentActivity} />
-        </div>
-
-        {/* Integrantes da Equipe e Funções */}
-        <div className="mb-6">
-          <TeamCard
-            users={users}
-            currentUser={currentUser}
-            onUserRoleChange={(userId, newRole) => {
-              setUsers((prev) =>
-                prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
-              );
-            }}
-          />
         </div>
 
         {/* Coleções por Status Breakdown */}

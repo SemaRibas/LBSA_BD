@@ -1,29 +1,35 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Card } from "@/components/ui/Card";
 import { UserWithoutPassword, UserRole } from "@/types";
-import { Shield, Eye, Microscope, UserCheck, ChevronRight, Mail, Calendar, Sparkles } from "lucide-react";
+import {
+  Shield,
+  Eye,
+  Microscope,
+  UserCheck,
+  ChevronRight,
+  Mail,
+  Calendar,
+  Sparkles,
+  Camera,
+  Upload,
+  Link as LinkIcon,
+  Trash2,
+  X,
+  Check,
+  User as UserIcon,
+} from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
 import KlarnaCarousel, { CarouselItem } from "@/components/ui/KlarnaCarousel";
+import { getFirstAndSurnameInitials } from "@/lib/userUtils";
 
 interface TeamCardProps {
   users: UserWithoutPassword[];
   currentUser: UserWithoutPassword | null;
   onUserRoleChange?: (userId: string, newRole: UserRole) => void;
+  onUserProfileUpdate?: (updatedUser: UserWithoutPassword) => void;
 }
-
-// Curated avatar pool for LBSA team presentation
-const AVATAR_POOL = [
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=800&q=80",
-];
 
 const DEFAULT_TEAM_MEMBERS: UserWithoutPassword[] = [
   { id: "1", name: "Dra. Sophia Benett", email: "sophia.benett@uesb.edu.br", role: "admin", createdAt: "2024-01-15" },
@@ -36,15 +42,24 @@ const DEFAULT_TEAM_MEMBERS: UserWithoutPassword[] = [
   { id: "8", name: "Ella Morgan", email: "ella.morgan@uesb.edu.br", role: "pesquisador", createdAt: "2024-05-18" },
 ];
 
-export function TeamCard({ users, currentUser, onUserRoleChange }: TeamCardProps) {
+export function TeamCard({ users, currentUser, onUserRoleChange, onUserProfileUpdate }: TeamCardProps) {
   const toast = useToast();
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState<number>(0);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
 
-  const displayUsers = users && users.length > 0 ? users : DEFAULT_TEAM_MEMBERS;
+  // Local users state so avatar changes reflect instantly
+  const [localUsers, setLocalUsers] = useState<UserWithoutPassword[]>([]);
+
+  const displayUsers = useMemo(() => {
+    if (localUsers.length > 0) return localUsers;
+    if (users && users.length > 0) return users;
+    return DEFAULT_TEAM_MEMBERS;
+  }, [localUsers, users]);
+
   const isAdmin = currentUser?.role === "admin";
-
   const activeUser = displayUsers[activeIndex] || displayUsers[0];
+  const canEditActiveUser = currentUser?.id === activeUser?.id || isAdmin;
 
   const handleRoleSelect = async (userId: string, targetRole: UserRole) => {
     setUpdatingUserId(userId);
@@ -58,12 +73,44 @@ export function TeamCard({ users, currentUser, onUserRoleChange }: TeamCardProps
       if (res.ok) {
         toast.success("Função Atualizada!", `A função de ${activeUser.name} foi alterada para "${getRoleLabel(targetRole)}".`);
         if (onUserRoleChange) onUserRoleChange(userId, targetRole);
+        setLocalUsers((prev) =>
+          prev.map((u) => (u.id === userId ? { ...u, role: targetRole } : u))
+        );
       } else {
         const data = await res.json();
         toast.error("Erro na permissão", data.error || "Não foi possível alterar a função.");
       }
     } catch {
       toast.error("Erro no Servidor", "Ocorreu uma falha ao alterar a função.");
+    } finally {
+      setUpdatingUserId(null);
+    }
+  };
+
+  const handleSaveAvatar = async (userId: string, newImagemUrl: string | undefined) => {
+    setUpdatingUserId(userId);
+    try {
+      const res = await fetch("/api/users", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, imagemUrl: newImagemUrl || "" }),
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        toast.success("Foto de Perfil Atualizada!", `A foto de ${activeUser.name} foi atualizada com sucesso.`);
+        setLocalUsers((prev) => {
+          const list = prev.length > 0 ? prev : displayUsers;
+          return list.map((u) => (u.id === userId ? { ...u, imagemUrl: newImagemUrl } : u));
+        });
+        if (onUserProfileUpdate) onUserProfileUpdate(updated);
+        setIsEditProfileOpen(false);
+      } else {
+        const data = await res.json();
+        toast.error("Erro ao atualizar foto", data.error || "Não foi possível salvar a imagem.");
+      }
+    } catch {
+      toast.error("Erro no Servidor", "Ocorreu uma falha ao enviar a imagem.");
     } finally {
       setUpdatingUserId(null);
     }
@@ -85,14 +132,12 @@ export function TeamCard({ users, currentUser, onUserRoleChange }: TeamCardProps
       case "admin":
         return {
           label: "Administrador",
-          icon: Shield,
           color: "#9333ea",
           bg: "rgba(147, 51, 234, 0.15)",
         };
       case "monitor":
         return {
           label: "Monitor(a)",
-          icon: Eye,
           color: "#0d9488",
           bg: "rgba(13, 148, 136, 0.15)",
         };
@@ -100,7 +145,6 @@ export function TeamCard({ users, currentUser, onUserRoleChange }: TeamCardProps
       default:
         return {
           label: "Pesquisador",
-          icon: Microscope,
           color: "#d97706",
           bg: "rgba(217, 119, 6, 0.15)",
         };
@@ -108,8 +152,8 @@ export function TeamCard({ users, currentUser, onUserRoleChange }: TeamCardProps
   };
 
   const carouselItems: CarouselItem[] = useMemo(() => {
-    return displayUsers.map((user, idx) => {
-      const avatarUrl = (user as any).imagemUrl || AVATAR_POOL[idx % AVATAR_POOL.length];
+    return displayUsers.map((user) => {
+      const avatarUrl = user.imagemUrl || "";
       const roleConfig = getRoleBadgeConfig(user.role || "pesquisador");
 
       return {
@@ -125,6 +169,8 @@ export function TeamCard({ users, currentUser, onUserRoleChange }: TeamCardProps
       };
     });
   }, [displayUsers]);
+
+  const activeInitials = getFirstAndSurnameInitials(activeUser?.name || "");
 
   return (
     <Card className="animate-slide-up bg-white dark:bg-surface-900 text-surface-900 dark:text-white border border-surface-200 dark:border-teal-500/30 shadow-xl dark:shadow-2xl p-4 sm:p-6 lg:p-8 overflow-hidden relative transition-colors duration-300">
@@ -188,15 +234,36 @@ export function TeamCard({ users, currentUser, onUserRoleChange }: TeamCardProps
         />
       </div>
 
-      {/* Active Team Member Focused Details Card */}
+      {/* Active Team Member Profile Space */}
       {activeUser && (
         <div className="relative z-10 mt-6 p-4 sm:p-5 rounded-2xl bg-surface-50 dark:bg-surface-800/80 border border-surface-200/90 dark:border-teal-500/30 backdrop-blur-md shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0 w-full md:w-auto">
-            <img
-              src={(activeUser as any).imagemUrl || AVATAR_POOL[activeIndex % AVATAR_POOL.length]}
-              alt={activeUser.name}
-              className="w-14 h-14 rounded-2xl object-cover border-2 border-teal-500/50 shadow-md shrink-0"
-            />
+            {/* Avatar or First & Surname Initials */}
+            <div className="relative group shrink-0">
+              {activeUser.imagemUrl ? (
+                <img
+                  src={activeUser.imagemUrl}
+                  alt={activeUser.name}
+                  className="w-14 h-14 rounded-2xl object-cover border-2 border-teal-500/50 shadow-md"
+                />
+              ) : (
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-500 via-teal-600 to-emerald-700 text-white font-black flex items-center justify-center text-lg border-2 border-teal-400/50 shadow-md tracking-wider">
+                  {activeInitials}
+                </div>
+              )}
+
+              {canEditActiveUser && (
+                <button
+                  type="button"
+                  onClick={() => setIsEditProfileOpen(true)}
+                  title="Alterar Foto de Perfil"
+                  className="absolute -bottom-1 -right-1 p-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white shadow-md transition-transform duration-200 hover:scale-110 active:scale-95 border border-white/40"
+                >
+                  <Camera className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h4 className="text-base font-extrabold text-surface-900 dark:text-white truncate">
@@ -224,8 +291,19 @@ export function TeamCard({ users, currentUser, onUserRoleChange }: TeamCardProps
             </div>
           </div>
 
-          {/* Role selector or role badge */}
-          <div className="shrink-0 w-full md:w-auto flex items-center justify-end">
+          {/* Action buttons (Profile space & Role selector) */}
+          <div className="shrink-0 w-full md:w-auto flex items-center justify-end gap-2 flex-wrap">
+            {canEditActiveUser && (
+              <button
+                type="button"
+                onClick={() => setIsEditProfileOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-extrabold bg-teal-50 dark:bg-teal-500/20 text-teal-800 dark:text-teal-200 border border-teal-300 dark:border-teal-500/40 hover:bg-teal-100 dark:hover:bg-teal-500/30 transition-all shadow-2xs active:scale-95"
+              >
+                <Camera className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                <span>Espaço de Perfil</span>
+              </button>
+            )}
+
             {isAdmin ? (
               <RoleSelectorDropdown
                 currentRole={activeUser.role || "pesquisador"}
@@ -271,6 +349,16 @@ export function TeamCard({ users, currentUser, onUserRoleChange }: TeamCardProps
           </p>
         </div>
       </div>
+
+      {/* Espaço de Perfil / Photo Upload Modal */}
+      {isEditProfileOpen && activeUser && (
+        <ProfileImageModal
+          user={activeUser}
+          isSaving={updatingUserId === activeUser.id}
+          onClose={() => setIsEditProfileOpen(false)}
+          onSave={(newImg) => handleSaveAvatar(activeUser.id, newImg)}
+        />
+      )}
     </Card>
   );
 }
@@ -392,6 +480,229 @@ function RoleSelectorDropdown({ currentRole, disabled, onSelectRole }: RoleDropd
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+// Profile Image Upload & Link Modal
+interface ProfileModalProps {
+  user: UserWithoutPassword;
+  isSaving: boolean;
+  onClose: () => void;
+  onSave: (newImg: string | undefined) => void;
+}
+
+function ProfileImageModal({ user, isSaving, onClose, onSave }: ProfileModalProps) {
+  const [activeTab, setActiveTab] = useState<"upload" | "url" | "initials">("upload");
+  const [imageUrlInput, setImageUrlInput] = useState(user.imagemUrl || "");
+  const [selectedPreview, setSelectedPreview] = useState<string | undefined>(user.imagemUrl);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const initials = getFirstAndSurnameInitials(user.name);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("A imagem selecionada deve ser menor que 5MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result as string;
+      setSelectedPreview(base64);
+      setImageUrlInput(base64);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-950/70 backdrop-blur-md animate-fade-in">
+      <div className="w-full max-w-md bg-white dark:bg-surface-900 rounded-3xl border border-surface-200 dark:border-teal-500/30 shadow-2xl overflow-hidden animate-slide-up">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-surface-100 dark:border-surface-800 bg-surface-50/50 dark:bg-surface-950/40">
+          <div className="flex items-center gap-2 text-teal-600 dark:text-teal-400">
+            <Camera className="h-5 w-5" />
+            <h3 className="font-extrabold text-base text-surface-900 dark:text-white">
+              Espaço de Perfil • Foto do Integrante
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1 rounded-full text-surface-400 hover:text-surface-700 dark:hover:text-white hover:bg-surface-200/50 dark:hover:bg-surface-800 transition-all"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* User preview header */}
+        <div className="p-6 flex flex-col items-center justify-center text-center bg-gradient-to-b from-surface-100/40 to-transparent dark:from-surface-800/30">
+          <div className="relative mb-3">
+            {selectedPreview ? (
+              <img
+                src={selectedPreview}
+                alt={user.name}
+                className="w-24 h-24 rounded-3xl object-cover border-4 border-teal-500 shadow-xl"
+              />
+            ) : (
+              <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-teal-500 via-teal-600 to-emerald-700 text-white font-black flex items-center justify-center text-3xl border-4 border-teal-400/50 shadow-xl tracking-wider">
+                {initials}
+              </div>
+            )}
+          </div>
+          <h4 className="font-extrabold text-lg text-surface-900 dark:text-white">{user.name}</h4>
+          <p className="text-xs text-surface-500 dark:text-surface-400">{user.email}</p>
+        </div>
+
+        {/* Tab Selection */}
+        <div className="px-6 flex items-center justify-center gap-2 border-b border-surface-100 dark:border-surface-800 pb-3">
+          <button
+            type="button"
+            onClick={() => setActiveTab("upload")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              activeTab === "upload"
+                ? "bg-teal-600 text-white shadow-md"
+                : "bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-300 hover:bg-surface-200 dark:hover:bg-surface-700"
+            }`}
+          >
+            <Upload className="h-3.5 w-3.5" />
+            Upload Foto
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("url")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              activeTab === "url"
+                ? "bg-teal-600 text-white shadow-md"
+                : "bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-300 hover:bg-surface-200 dark:hover:bg-surface-700"
+            }`}
+          >
+            <LinkIcon className="h-3.5 w-3.5" />
+            Link URL
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("initials");
+              setSelectedPreview(undefined);
+            }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              activeTab === "initials"
+                ? "bg-teal-600 text-white shadow-md"
+                : "bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-300 hover:bg-surface-200 dark:hover:bg-surface-700"
+            }`}
+          >
+            <UserIcon className="h-3.5 w-3.5" />
+            Usar Iniciais ({initials})
+          </button>
+        </div>
+
+        {/* Tab Body */}
+        <div className="p-6">
+          {activeTab === "upload" && (
+            <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-teal-500/40 rounded-2xl bg-teal-50/40 dark:bg-teal-950/20 text-center">
+              <Upload className="h-8 w-8 text-teal-600 dark:text-teal-400 mb-2 animate-bounce" />
+              <p className="text-xs font-bold text-surface-800 dark:text-surface-200 mb-1">
+                Carregar foto do computador ou celular
+              </p>
+              <p className="text-[10px] text-surface-500 dark:text-surface-400 mb-4">
+                Suporta PNG, JPG, WEBP (máx. 5MB)
+              </p>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-extrabold shadow-md transition-transform active:scale-95"
+              >
+                Selecionar Imagem...
+              </button>
+            </div>
+          )}
+
+          {activeTab === "url" && (
+            <div className="space-y-3">
+              <label className="block text-xs font-bold text-surface-700 dark:text-surface-300">
+                Endereço da Imagem (URL)
+              </label>
+              <div className="relative">
+                <input
+                  type="url"
+                  placeholder="https://exemplo.com/sua-foto.jpg"
+                  value={imageUrlInput}
+                  onChange={(e) => {
+                    setImageUrlInput(e.target.value);
+                    setSelectedPreview(e.target.value || undefined);
+                  }}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-surface-300 dark:border-surface-700 bg-white dark:bg-surface-800 text-xs font-medium text-surface-900 dark:text-white focus:ring-2 focus:ring-teal-500 outline-hidden"
+                />
+              </div>
+              <p className="text-[10px] text-surface-500 dark:text-surface-400">
+                Cole o link direto da imagem na web para aplicar no perfil.
+              </p>
+            </div>
+          )}
+
+          {activeTab === "initials" && (
+            <div className="p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 text-center">
+              <p className="text-xs font-extrabold text-amber-800 dark:text-amber-300 mb-1">
+                Sem foto personalizada
+              </p>
+              <p className="text-[11px] text-surface-600 dark:text-surface-300">
+                O sistema exibirá a inicial do nome e do primeiro sobrenome: <strong className="text-teal-600 dark:text-teal-400">"{initials}"</strong>.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Modal Actions */}
+        <div className="flex items-center justify-between px-6 py-4 border-t border-surface-100 dark:border-surface-800 bg-surface-50/50 dark:bg-surface-950/40">
+          {user.imagemUrl ? (
+            <button
+              type="button"
+              onClick={() => onSave(undefined)}
+              disabled={isSaving}
+              className="inline-flex items-center gap-1 text-xs font-extrabold text-red-600 hover:text-red-700 dark:text-red-400"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Remover Foto
+            </button>
+          ) : (
+            <div />
+          )}
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl text-xs font-bold text-surface-600 dark:text-surface-300 hover:bg-surface-200/60 dark:hover:bg-surface-800"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={() => onSave(selectedPreview)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-extrabold shadow-md transition-transform active:scale-95"
+            >
+              <Check className="h-4 w-4" />
+              {isSaving ? "Salvando..." : "Salvar Foto"}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
