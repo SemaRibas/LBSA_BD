@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   },
 };
 
+import UserCursor from "@/components/ui/UserCursor";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -46,7 +48,10 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <ToastProvider>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <UserCursor />
+            {children}
+          </AuthProvider>
         </ToastProvider>
       </body>
     </html>
