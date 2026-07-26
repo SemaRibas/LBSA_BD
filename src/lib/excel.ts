@@ -30,25 +30,38 @@ async function getDoc(): Promise<GoogleSpreadsheet> {
   return doc;
 }
 
+const REQUIRED_HEADERS: Record<string, string[]> = {
+  Usuarios: ["id", "name", "email", "password", "role", "createdAt", "imagemUrl"],
+  Materiais: ["id", "material", "quantidade", "estado", "validade", "observacoes", "imagemUrl", "createdBy", "creatorName"],
+  Colecoes: [
+    "id", "numeroTombo", "identificacaoBasica", "clado", "filo", 
+    "subfilo", "classe", "determinador", "numeroExemplares", 
+    "localidade", "coletor", "dataColeta", "fonte", 
+    "condicaoFrasco", "observacoes", "estagiarioResponsavel", 
+    "status", "condicaoRecipiente", "imagemUrl", "createdBy", "creatorName"
+  ],
+};
+
 async function ensureHeaders(sheet: any, sheetName: string) {
+  const expected = REQUIRED_HEADERS[sheetName];
+  if (!expected) return;
+
   try {
     await sheet.loadHeaderRow();
-    if (sheetName === "Usuarios" && sheet.headerValues && !sheet.headerValues.includes("imagemUrl")) {
-      await sheet.setHeaderRow([...sheet.headerValues, "imagemUrl"]);
+    const currentHeaders = (sheet.headerValues || []).filter(Boolean);
+    
+    // Verificar se o cabeçalho existe e possui todas as colunas necessárias
+    const isValid = currentHeaders.length > 0 && expected.every((h) => currentHeaders.includes(h));
+
+    if (!isValid) {
+      const merged = Array.from(new Set([...currentHeaders, ...expected]));
+      await sheet.setHeaderRow(merged.length >= expected.length ? merged : expected);
     }
   } catch {
-    if (sheetName === "Materiais") {
-      await sheet.setHeaderRow(["id", "material", "quantidade", "estado", "validade", "observacoes", "imagemUrl", "createdBy", "creatorName"]);
-    } else if (sheetName === "Colecoes") {
-      await sheet.setHeaderRow([
-        "id", "numeroTombo", "identificacaoBasica", "clado", "filo", 
-        "subfilo", "classe", "determinador", "numeroExemplares", 
-        "localidade", "coletor", "dataColeta", "fonte", 
-        "condicaoFrasco", "observacoes", "estagiarioResponsavel", 
-        "status", "condicaoRecipiente", "imagemUrl", "createdBy", "creatorName"
-      ]);
-    } else if (sheetName === "Usuarios") {
-      await sheet.setHeaderRow(["id", "name", "email", "password", "role", "createdAt", "imagemUrl"]);
+    try {
+      await sheet.setHeaderRow(expected);
+    } catch (e) {
+      console.error(`Erro ao recriar cabeçalho para ${sheetName}:`, e);
     }
   }
 }
@@ -64,7 +77,14 @@ async function getSheet<T>(sheetName: string): Promise<{ sheet: any; rows: T[] }
 
   await ensureHeaders(sheet, sheetName);
   
-  const rawRows = await sheet.getRows();
+  let rawRows: any[] = [];
+  try {
+    rawRows = await sheet.getRows();
+  } catch {
+    // Se falhar por falta de cabeçalho, recria o cabeçalho e tenta novamente
+    await ensureHeaders(sheet, sheetName);
+    rawRows = await sheet.getRows().catch(() => []);
+  }
   
   const data = rawRows.map((row: any) => {
     const rawObj = typeof row.toObject === "function" ? row.toObject() : {};
@@ -94,7 +114,7 @@ async function addRow<T extends Record<string, any>>(sheetName: string, item: T)
   if (!sheet) {
     sheet = await doc.addSheet({
       title: sheetName,
-      headerValues: Object.keys(item).filter((k) => !k.startsWith("_")),
+      headerValues: REQUIRED_HEADERS[sheetName] || Object.keys(item).filter((k) => !k.startsWith("_")),
     });
   }
 
@@ -178,7 +198,7 @@ async function setSheetData<T extends Record<string, any>>(
     if (data.length > 0) {
       sheet = await doc.addSheet({ 
         title: sheetName,
-        headerValues: Object.keys(data[0]).filter(k => !k.startsWith("_"))
+        headerValues: REQUIRED_HEADERS[sheetName] || Object.keys(data[0]).filter(k => !k.startsWith("_"))
       });
     } else {
       sheet = await doc.addSheet({ title: sheetName });
