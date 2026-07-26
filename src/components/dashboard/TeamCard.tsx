@@ -661,7 +661,7 @@ function ProfileImageModal({ user, isSaving, onClose, onSave }: ProfileModalProp
                 Sem foto personalizada
               </p>
               <p className="text-[11px] text-surface-600 dark:text-surface-300">
-                O sistema exibirá a inicial do nome e do primeiro sobrenome: <strong className="text-teal-600 dark:text-teal-400">"{initials}"</strong>.
+                O sistema exibirá a inicial do nome e do primeiro sobrenome: <strong className="text-teal-600 dark:text-teal-400">&quot;{initials}&quot;</strong>.
               </p>
             </div>
           )}
