@@ -222,7 +222,7 @@ export default function UserCursor(props: UserCursorProps) {
                             whiteSpace: "nowrap",
                             letterSpacing: 0.2,
                             display: "flex",
-                            items: "center",
+                            alignItems: "center",
                             gap: 4,
                         }}
                     >
