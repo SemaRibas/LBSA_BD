@@ -113,24 +113,109 @@ export default function DashboardPage() {
     return { score, status, color, delta };
   }, [materiais, colecoes]);
 
-  // Dynamic 6-month chart data reactively scaled from real inventory and collections data
-  const chartData = useMemo(() => {
-    const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun"];
-    const totalM = materiais.length;
-    const totalC = colecoes.length;
-
-    if (totalM === 0 && totalC === 0) {
-      return months.map((month) => ({ month, materiais: 0, colecoes: 0 }));
+  // Helper to parse date strings safely
+  const parseItemDate = (dateStr?: string) => {
+    const now = new Date();
+    if (!dateStr || typeof dateStr !== "string") {
+      return { year: now.getFullYear(), month: now.getMonth() };
     }
 
-    const factors = [0.45, 0.60, 0.72, 0.85, 0.92, 1.0];
+    const str = dateStr.trim();
+    if (!str) return { year: now.getFullYear(), month: now.getMonth() };
 
-    return months.map((month, idx) => {
-      const factor = factors[idx];
+    const isoMatch = str.match(/^(\d{4})[-/](\d{1,2})([-/#].*)?$/);
+    if (isoMatch) {
+      const year = parseInt(isoMatch[1], 10);
+      const month = parseInt(isoMatch[2], 10) - 1;
+      if (year >= 2000 && year <= 2100 && month >= 0 && month <= 11) {
+        return { year, month };
+      }
+    }
+
+    const brMatch = str.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/);
+    if (brMatch) {
+      const year = parseInt(brMatch[3], 10);
+      const month = parseInt(brMatch[2], 10) - 1;
+      if (year >= 2000 && year <= 2100 && month >= 0 && month <= 11) {
+        return { year, month };
+      }
+    }
+
+    const parsedDate = new Date(str);
+    if (!isNaN(parsedDate.getTime()) && parsedDate.getFullYear() >= 2000) {
+      return { year: parsedDate.getFullYear(), month: parsedDate.getMonth() };
+    }
+
+    return { year: now.getFullYear(), month: now.getMonth() };
+  };
+
+  // Real chart data grouped by actual registration months starting from the first record month
+  const chartData = useMemo(() => {
+    const monthNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    if (colecoes.length === 0 && materiais.length === 0) {
+      const label = `${monthNames[currentMonth]}/${currentYear}`;
+      return [{ month: label, materiais: 0, colecoes: 0 }];
+    }
+
+    let earliestYear = currentYear;
+    let earliestMonth = currentMonth;
+
+    colecoes.forEach((c) => {
+      const d = parseItemDate(c.dataColeta);
+      if (d.year < earliestYear || (d.year === earliestYear && d.month < earliestMonth)) {
+        earliestYear = d.year;
+        earliestMonth = d.month;
+      }
+    });
+
+    materiais.forEach((m) => {
+      const d = parseItemDate(m.validade);
+      if (d.year < earliestYear || (d.year === earliestYear && d.month < earliestMonth)) {
+        earliestYear = d.year;
+        earliestMonth = d.month;
+      }
+    });
+
+    const timeline: { label: string; year: number; month: number }[] = [];
+    let curY = earliestYear;
+    let curM = earliestMonth;
+
+    while (curY < currentYear || (curY === currentYear && curM <= currentMonth)) {
+      timeline.push({
+        label: `${monthNames[curM]}/${curY}`,
+        year: curY,
+        month: curM,
+      });
+
+      curM++;
+      if (curM > 11) {
+        curM = 0;
+        curY++;
+      }
+    }
+
+    return timeline.map(({ label, year, month }) => {
+      const colCount = colecoes.filter((c) => {
+        const d = parseItemDate(c.dataColeta);
+        return d.year === year && d.month === month;
+      }).length;
+
+      const matCount = materiais.filter((m) => {
+        const d = parseItemDate(m.validade);
+        return d.year === year && d.month === month;
+      }).length;
+
+      const finalColCount = timeline.length === 1 && colCount === 0 ? colecoes.length : colCount;
+      const finalMatCount = timeline.length === 1 && matCount === 0 ? materiais.length : matCount;
+
       return {
-        month,
-        materiais: Math.round(totalM * factor),
-        colecoes: Math.round(totalC * factor),
+        month: label,
+        materiais: finalMatCount,
+        colecoes: finalColCount,
       };
     });
   }, [materiais, colecoes]);
