@@ -54,7 +54,7 @@ export function ExportModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Exportar Relatório" size="md">
+    <Modal isOpen={isOpen} onClose={onClose} title="Exportar Relatório">
       <div className="space-y-5 py-2">
         <p className="text-xs sm:text-sm text-surface-600 dark:text-surface-400">
           Escolha o formato desejado para exportar os <strong>{data.length}</strong> registros selecionados do sistema LBSA:

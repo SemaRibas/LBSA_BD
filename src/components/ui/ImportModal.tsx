@@ -100,7 +100,7 @@ export function ImportModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={() => { handleReset(); onClose(); }} title={`Importar para ${title}`} size="lg">
+    <Modal isOpen={isOpen} onClose={() => { handleReset(); onClose(); }} title={`Importar para ${title}`} className="max-w-2xl">
       <div className="space-y-4 py-1">
         {/* Instructions & Required Headers Card */}
         <div className="p-3.5 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/40 text-xs text-amber-900 dark:text-amber-200 space-y-2">
