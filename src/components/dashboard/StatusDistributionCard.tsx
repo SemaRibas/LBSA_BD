@@ -46,13 +46,12 @@ export function StatusDistributionCard({ colecoes }: StatusDistributionCardProps
     };
   }, [colecoes]);
 
-  // Percentage calculations
-  const getPercent = (count: number) => {
-    if (!stats.total || stats.total === 0) return 0;
-    return Math.round((count / stats.total) * 100);
-  };
-
   const statusItems = useMemo(() => {
+    const calcPercent = (count: number) => {
+      if (!stats.total || stats.total === 0) return 0;
+      return Math.round((count / stats.total) * 100);
+    };
+
     return [
       {
         id: "transparente",
@@ -60,7 +59,7 @@ export function StatusDistributionCard({ colecoes }: StatusDistributionCardProps
         label: "Líquido Transparente",
         description: "Solvente limpo em perfeito estado de conservação",
         count: stats.transparente,
-        percent: getPercent(stats.transparente),
+        percent: calcPercent(stats.transparente),
         color: "#10b981",
         bgColor: "bg-emerald-500",
         textColor: "text-emerald-600 dark:text-emerald-400",
@@ -74,7 +73,7 @@ export function StatusDistributionCard({ colecoes }: StatusDistributionCardProps
         label: "Líquido Turvo",
         description: "Requer filtragem ou renovação periódica do meio",
         count: stats.turvo,
-        percent: getPercent(stats.turvo),
+        percent: calcPercent(stats.turvo),
         color: "#0284c7",
         bgColor: "bg-sky-500",
         textColor: "text-sky-600 dark:text-sky-400",
@@ -88,7 +87,7 @@ export function StatusDistributionCard({ colecoes }: StatusDistributionCardProps
         label: "Sem Líquido / Seco",
         description: "Coleção desidratada ou sem meio preservativo",
         count: stats.seco,
-        percent: getPercent(stats.seco),
+        percent: calcPercent(stats.seco),
         color: "#f59e0b",
         bgColor: "bg-amber-500",
         textColor: "text-amber-600 dark:text-amber-400",
@@ -102,7 +101,7 @@ export function StatusDistributionCard({ colecoes }: StatusDistributionCardProps
         label: "Frasco Excelente / Favorável",
         description: "Recipiente de vidro/acrílico vedado e íntegro",
         count: stats.frascoBom,
-        percent: getPercent(stats.frascoBom),
+        percent: calcPercent(stats.frascoBom),
         color: "#0d9488",
         bgColor: "bg-teal-500",
         textColor: "text-teal-600 dark:text-teal-400",
@@ -116,7 +115,7 @@ export function StatusDistributionCard({ colecoes }: StatusDistributionCardProps
         label: "Frasco Regular / Razoável",
         description: "Recipiente com desgaste moderado ou tampa frágil",
         count: stats.frascoRazoavel,
-        percent: getPercent(stats.frascoRazoavel),
+        percent: calcPercent(stats.frascoRazoavel),
         color: "#d97706",
         bgColor: "bg-amber-600",
         textColor: "text-amber-700 dark:text-amber-400",
@@ -130,7 +129,7 @@ export function StatusDistributionCard({ colecoes }: StatusDistributionCardProps
         label: "Frasco Crítico / Riscos",
         description: "Frasco trincado ou risco imediato de evaporação",
         count: stats.frascoCritico,
-        percent: getPercent(stats.frascoCritico),
+        percent: calcPercent(stats.frascoCritico),
         color: "#e11d48",
         bgColor: "bg-rose-600",
         textColor: "text-rose-600 dark:text-rose-400",
