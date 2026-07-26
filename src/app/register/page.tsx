@@ -47,8 +47,9 @@ export default function RegisterPage() {
       });
 
       if (res.ok) {
-        toast.success("Conta criada!", "Faça login com suas credenciais.");
-        router.push("/login");
+        toast.success("Conta Criada!", "Sua conta foi criada e você já está conectado ao LBSA.");
+        router.push("/");
+        router.refresh();
       } else {
         const data = await res.json();
         const msg = data.error || "Erro ao cadastrar";
