@@ -114,21 +114,20 @@ export function Header({ title, className }: HeaderProps) {
         className
       )}
     >
-      {/* Page Title & Mobile Hamburger */}
+      {/* Page Title & Mobile Brand Logo */}
       <div className="flex items-center gap-2 xs:gap-3 min-w-0">
-        <button
-          type="button"
-          onClick={() => window.dispatchEvent(new Event("lbsa_toggle_sidebar"))}
-          className="lg:hidden p-2 rounded-xl bg-teal-700/10 dark:bg-teal-500/20 text-teal-700 dark:text-teal-300 hover:bg-teal-700 hover:text-white border border-teal-500/20 shadow-2xs active:scale-95 transition-all shrink-0 flex items-center justify-center"
-          aria-label="Abrir menu"
-          title="Abrir menu de navegação"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
-
         <h1 className="hidden lg:block text-lg sm:text-2xl font-black text-surface-900 dark:text-surface-100 uppercase tracking-wider truncate">
           {title}
         </h1>
+
+        {/* Mobile Header Brand */}
+        <div className="lg:hidden flex items-center gap-2 py-0.5">
+          <img src="/logo_black.png" alt="LBSA Logo" className="h-7 w-auto dark:hidden" />
+          <img src="/logo_white.png" alt="LBSA Logo" className="h-7 w-auto hidden dark:block" />
+          <span className="text-xs font-black text-teal-800 dark:text-teal-300 tracking-wider uppercase">
+            LBSA
+          </span>
+        </div>
       </div>
 
       {/* Right Area: Real-Time Presence & User Account */}

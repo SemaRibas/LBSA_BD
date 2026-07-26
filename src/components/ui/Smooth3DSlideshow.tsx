@@ -185,10 +185,23 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
     }, []);
 
     const effectiveCardWidth = useMemo(() => {
-        if (winWidth <= 480) return Math.min(cardWidth, winWidth - 48);
-        if (winWidth <= 768) return Math.min(cardWidth, winWidth - 64);
+        if (winWidth <= 380) return Math.min(cardWidth, Math.max(200, winWidth - 90));
+        if (winWidth <= 480) return Math.min(cardWidth, Math.max(240, winWidth - 110));
+        if (winWidth <= 768) return Math.min(cardWidth, Math.max(280, winWidth - 130));
         return cardWidth;
     }, [winWidth, cardWidth]);
+
+    const effectiveCardHeight = useMemo(() => {
+        if (winWidth <= 480) return Math.min(cardHeight, Math.round(effectiveCardWidth * 0.85));
+        if (winWidth <= 768) return Math.min(cardHeight, Math.round(effectiveCardWidth * 0.9));
+        return cardHeight;
+    }, [winWidth, cardHeight, effectiveCardWidth]);
+
+    const effectiveGap = useMemo(() => {
+        if (winWidth <= 480) return 4;
+        if (winWidth <= 768) return 6;
+        return gap;
+    }, [winWidth, gap]);
 
     useEffect(() => {
         setActive((a) => Math.max(0, Math.min(n - 1, a)))
@@ -273,15 +286,15 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
 
     const effectiveRadius =
         (Math.max(0, Math.min(20, radius)) / 20) *
-        (Math.min(cardWidth, cardHeight) / 2)
+        (Math.min(effectiveCardWidth, effectiveCardHeight) / 2)
     const dim = 1 - Math.max(0, Math.min(100, opacity)) / 100
 
     const rootStyle: CSSProperties = {
         ...(style || {}),
         position: "relative",
         width: "100%",
-        height: cardHeight + 80,
-        minWidth: 320,
+        height: effectiveCardHeight + (winWidth <= 480 ? 45 : 70),
+        minWidth: 260,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -303,8 +316,8 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
             <div
                 style={{
                     position: "relative",
-                    width: cardWidth,
-                    height: cardHeight,
+                    width: effectiveCardWidth,
+                    height: effectiveCardHeight,
                     transformStyle: "preserve-3d",
                 }}
             >
@@ -318,7 +331,7 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
                     const visible = ax <= MAX_VISIBLE
                     const isActive = rel === 0
                     const sc = Math.max(0.4, 1 - ax * SCALE_STEP)
-                    const tx = rel * (gap * 30)
+                    const tx = rel * (effectiveGap * 18)
                     const tz = -ax * DEPTH
                     const ry = -rel * tilt
                     const rz = rel * sideTilt
@@ -329,7 +342,7 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
                         left: "50%",
                         top: "50%",
                         width: effectiveCardWidth,
-                        height: cardHeight,
+                        height: effectiveCardHeight,
                         borderRadius: effectiveRadius,
                         overflow: "hidden",
                         transformStyle: "preserve-3d",
@@ -413,9 +426,9 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
                                         <span
                                             style={{
                                                 color: titleColor,
-                                                fontSize: 24,
+                                                fontSize: winWidth <= 480 ? 15 : 22,
                                                 fontWeight: 700,
-                                                lineHeight: "1.25em",
+                                                lineHeight: "1.2em",
                                                 letterSpacing: "-0.02em",
                                                 whiteSpace: "pre-line",
                                                 textShadow:
@@ -453,9 +466,9 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
                 type="button"
                 onClick={() => step(-1)}
                 aria-label="Anterior"
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/80 dark:bg-surface-900/70 hover:bg-teal-600 dark:hover:bg-teal-600 text-surface-800 dark:text-white hover:text-white dark:hover:text-white backdrop-blur-md flex items-center justify-center border border-surface-200 dark:border-white/10 transition-all duration-200 shadow-lg hover:scale-110 active:scale-95"
+                className="absolute left-1 xs:left-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 xs:w-10 xs:h-10 rounded-full bg-white/85 dark:bg-surface-900/80 hover:bg-teal-600 dark:hover:bg-teal-600 text-surface-800 dark:text-white backdrop-blur-md flex items-center justify-center border border-surface-200 dark:border-white/10 transition-all duration-200 shadow-md hover:scale-105 active:scale-95"
             >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-4 h-4 xs:w-5 xs:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
                 </svg>
             </button>
@@ -463,15 +476,15 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
                 type="button"
                 onClick={() => step(1)}
                 aria-label="Próximo"
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/80 dark:bg-surface-900/70 hover:bg-teal-600 dark:hover:bg-teal-600 text-surface-800 dark:text-white hover:text-white dark:hover:text-white backdrop-blur-md flex items-center justify-center border border-surface-200 dark:border-white/10 transition-all duration-200 shadow-lg hover:scale-110 active:scale-95"
+                className="absolute right-1 xs:right-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 xs:w-10 xs:h-10 rounded-full bg-white/85 dark:bg-surface-900/80 hover:bg-teal-600 dark:hover:bg-teal-600 text-surface-800 dark:text-white backdrop-blur-md flex items-center justify-center border border-surface-200 dark:border-white/10 transition-all duration-200 shadow-md hover:scale-105 active:scale-95"
             >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-4 h-4 xs:w-5 xs:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                 </svg>
             </button>
 
             {/* Indicators / Counter */}
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/80 dark:bg-surface-950/70 backdrop-blur-md border border-surface-200 dark:border-white/10 shadow-sm">
+            <div className="absolute bottom-1.5 xs:bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 xs:gap-1.5 px-2.5 py-1 xs:px-3 xs:py-1.5 rounded-full bg-white/85 dark:bg-surface-950/80 backdrop-blur-md border border-surface-200 dark:border-white/10 shadow-sm max-w-[85%] overflow-x-auto no-scrollbar">
                 {list.map((_, idx) => (
                     <button
                         key={idx}
@@ -481,10 +494,10 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
                                 changeActiveIndex(idx)
                             }
                         }}
-                        className={`h-2 rounded-full transition-all duration-300 ${
+                        className={`h-1.5 xs:h-2 rounded-full transition-all duration-300 shrink-0 ${
                             idx === active
-                                ? "w-6 bg-teal-600 dark:bg-teal-400"
-                                : "w-2 bg-surface-300 dark:bg-surface-600 hover:bg-surface-400"
+                                ? "w-4 xs:w-6 bg-teal-600 dark:bg-teal-400"
+                                : "w-1.5 xs:w-2 bg-surface-300 dark:bg-surface-600 hover:bg-surface-400"
                         }`}
                         aria-label={`Ir para o item ${idx + 1}`}
                     />

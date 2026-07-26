@@ -62,34 +62,47 @@ const Sidebar = ({ className }: SidebarProps) => {
 
   return (
     <>
-      {/* Overlay */}
-      {isOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-40 animate-fade-in"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
+      {/* Mobile Bottom Navigation Bar */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-surface-900/95 backdrop-blur-md border-t border-surface-200/80 dark:border-surface-800/80 px-2 py-1.5 flex items-center justify-around shadow-2xl">
+        {navItems.map((item) => {
+          const isActive = pathname === item.href;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all duration-200 min-w-[64px]",
+                isActive
+                  ? "text-teal-600 dark:text-teal-400 font-black scale-105 bg-teal-50 dark:bg-teal-950/40"
+                  : "text-surface-500 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white font-medium"
+              )}
+            >
+              <item.icon className="h-5 w-5" />
+              <span className="text-[10px] tracking-tight">{item.label}</span>
+            </Link>
+          );
+        })}
 
-      {/* Sidebar */}
+        {/* Theme Toggle Button */}
+        <button
+          onClick={toggleTheme}
+          className="flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-surface-500 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white transition-all min-w-[64px]"
+          aria-label="Alternar Tema"
+          title="Alternar Tema Claro/Escuro"
+        >
+          {isDark ? <Sun className="h-5 w-5 text-amber-400" /> : <Moon className="h-5 w-5" />}
+          <span className="text-[10px] tracking-tight">{isDark ? "Claro" : "Escuro"}</span>
+        </button>
+      </nav>
+
+      {/* Desktop Sidebar */}
       <aside
         className={cn(
-          "fixed left-0 top-0 h-full w-20 bg-gradient-to-b from-teal-700 to-teal-800",
-          "flex flex-col items-center pt-6 pb-6 z-40",
-          "transition-transform duration-300 ease-in-out",
-          "lg:translate-x-0",
-          isOpen ? "translate-x-0" : "-translate-x-full",
+          "hidden lg:flex fixed left-0 top-0 h-full w-20 bg-gradient-to-b from-teal-700 to-teal-800",
+          "flex-col items-center py-6 z-40",
           className
         )}
       >
-        {/* Mobile Close Button inside Sidebar */}
-        <button
-          onClick={() => setIsOpen(false)}
-          className="lg:hidden mb-2 p-2 text-teal-200 hover:text-white hover:bg-teal-600 rounded-xl transition-all"
-          aria-label="Fechar menu"
-        >
-          <X className="h-6 w-6" />
-        </button>
-
         {/* Logo Branca Grande */}
         <Link href="/" className="mb-4 flex flex-col items-center justify-center px-2 hover:scale-105 transition-transform" title="LBSA Dashboard">
           <img
@@ -114,7 +127,6 @@ const Sidebar = ({ className }: SidebarProps) => {
                     ? "bg-white text-teal-700 shadow-lg"
                     : "text-teal-200 hover:bg-teal-600 hover:text-white"
                 )}
-                onClick={() => setIsOpen(false)}
               >
                 <item.icon className="h-5 w-5" />
                 {/* Tooltip */}
