@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Mail, Lock, User } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function RegisterPage() {
   const router = useRouter();
   const toast = useToast();
+  const { register } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,19 +42,13 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
+      const success = await register(name.trim(), email.trim().toLowerCase(), password.trim());
 
-      if (res.ok) {
+      if (success) {
         toast.success("Conta Criada!", "Sua conta foi criada e você já está conectado ao LBSA.");
         router.push("/");
-        router.refresh();
       } else {
-        const data = await res.json();
-        const msg = data.error || "Erro ao cadastrar";
+        const msg = "Erro ao cadastrar ou e-mail já registrado.";
         setError(msg);
         toast.error("Erro no Cadastro", msg);
       }

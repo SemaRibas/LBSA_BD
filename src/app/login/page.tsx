@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Mail, Lock } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();
   const toast = useToast();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -23,22 +25,13 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: email.trim().toLowerCase(),
-          password: password.trim(),
-        }),
-      });
+      const success = await login(email.trim().toLowerCase(), password.trim());
 
-      if (res.ok) {
+      if (success) {
         toast.success("Bem-vindo ao LBSA!", "Login realizado com sucesso.");
         router.push("/");
-        router.refresh();
       } else {
-        const data = await res.json();
-        const msg = data.error || "Erro ao fazer login";
+        const msg = "E-mail ou senha inválidos. Verifique suas credenciais.";
         setError(msg);
         toast.error("Falha na autenticação", msg);
       }

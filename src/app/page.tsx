@@ -15,55 +15,46 @@ import { Layers } from "lucide-react";
 import Smooth3DSlideshow from "@/components/ui/Smooth3DSlideshow";
 import { colecoesToSlides, materiaisToSlides } from "@/lib/slideAdapters";
 
+import { useAuth } from "@/contexts/AuthContext";
+
 export default function DashboardPage() {
   const router = useRouter();
+  const { user: authUser, isLoading: authLoading } = useAuth();
   const [materiais, setMateriais] = useState<Material[]>([]);
   const [colecoes, setColecoes] = useState<Colecao[]>([]);
   const [users, setUsers] = useState<UserWithoutPassword[]>([]);
-  const [currentUser, setCurrentUser] = useState<UserWithoutPassword | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [galleryMode, setGalleryMode] = useState<"colecoes" | "inventario">("colecoes");
 
+  const currentUser = authUser;
+
   useEffect(() => {
-    const checkAuth = async () => {
+    if (authLoading) return;
+    if (!authUser) {
+      router.replace("/login");
+      return;
+    }
+
+    const fetchData = async () => {
       try {
-        const res = await fetch("/api/auth/check");
-        if (!res.ok) {
-          router.replace("/login");
-          return false;
-        }
-        const data = await res.json();
-        setCurrentUser(data.user);
-        return true;
-      } catch {
-        router.replace("/login");
-        return false;
+        const [materiaisRes, colecoesRes, usersRes] = await Promise.all([
+          fetch("/api/materiais"),
+          fetch("/api/colecoes"),
+          fetch("/api/users"),
+        ]);
+
+        if (materiaisRes.ok) setMateriais(await materiaisRes.json());
+        if (colecoesRes.ok) setColecoes(await colecoesRes.json());
+        if (usersRes.ok) setUsers(await usersRes.json());
+      } catch (error) {
+        console.error("Erro ao buscar dados:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    checkAuth().then((ok) => {
-      if (!ok) return;
-      const fetchData = async () => {
-        try {
-          const [materiaisRes, colecoesRes, usersRes] = await Promise.all([
-            fetch("/api/materiais"),
-            fetch("/api/colecoes"),
-            fetch("/api/users"),
-          ]);
-
-          if (materiaisRes.ok) setMateriais(await materiaisRes.json());
-          if (colecoesRes.ok) setColecoes(await colecoesRes.json());
-          if (usersRes.ok) setUsers(await usersRes.json());
-        } catch (error) {
-          console.error("Erro ao buscar dados:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
-      fetchData();
-    });
-  }, [router]);
+    fetchData();
+  }, [authUser, authLoading, router]);
 
   const metrics = useMemo(() => {
     return {
