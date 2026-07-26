@@ -31,6 +31,29 @@ export async function POST(request: NextRequest) {
   try {
     const user = getCurrentUser(request);
     const body = await request.json();
+
+    // Bulk array insertion for Excel imports
+    if (Array.isArray(body)) {
+      const createdItems: Material[] = [];
+      for (const item of body) {
+        if (!item.material) continue;
+        const newItem: Material = {
+          id: item.id || generateId(),
+          material: String(item.material || "").trim(),
+          quantidade: String(item.quantidade || "1").trim(),
+          estado: String(item.estado || "Conservado").trim(),
+          validade: String(item.validade || "Não consta").trim(),
+          observacoes: String(item.observacoes || "").trim(),
+          imagemUrl: String(item.imagemUrl || "").trim(),
+          createdBy: user?.email || "admin@lbsa.uesb.br",
+          creatorName: user?.name || "Administrador",
+        };
+        await addRow(SHEET_NAME, newItem);
+        createdItems.push(newItem);
+      }
+      return NextResponse.json(createdItems, { status: 201 });
+    }
+
     const { material, quantidade, estado, validade, observacoes, imagemUrl } = body;
 
     if (!material || !quantidade) {
@@ -87,7 +110,6 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Role Permission Check: Pesquisador can ONLY edit their own created items
     if (user && user.role === "pesquisador" && existing.createdBy && existing.createdBy !== user.email) {
       return NextResponse.json(
         { error: "Pesquisador só pode modificar itens cadastrados por ele mesmo." },
@@ -129,7 +151,6 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Role Permission Check: Pesquisador CANNOT delete items created by others
     if (user && user.role === "pesquisador" && existing.createdBy && existing.createdBy !== user.email) {
       return NextResponse.json(
         { error: "Pesquisador não tem permissão para excluir itens de outros integrantes." },

@@ -14,12 +14,13 @@ import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Select } from "@/components/ui/Select";
 import { Colecao, UserWithoutPassword } from "@/types";
 import { ColecaoCard } from "@/components/ui/ColecaoCard";
-import { Search, Plus, Download, Layers, Table as TableIcon, Edit, Trash2, Box, LayoutGrid } from "lucide-react";
+import { Search, Plus, Download, Layers, Table as TableIcon, Edit, Trash2, Box, LayoutGrid, Upload } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
 import Smooth3DSlideshow, { Slide } from "@/components/ui/Smooth3DSlideshow";
 import { colecoesToSlides } from "@/lib/slideAdapters";
-
 import { useAuth } from "@/contexts/AuthContext";
+import { ExportModal } from "@/components/ui/ExportModal";
+import { ImportModal } from "@/components/ui/ImportModal";
 
 export default function ChannelsPage() {
   const router = useRouter();
@@ -35,6 +36,47 @@ export default function ChannelsPage() {
   const [activeColecaoFromSlide, setActiveColecaoFromSlide] = useState<Colecao | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("");
   const [viewMode, setViewMode] = useState<"cards" | "coverflow" | "table">("cards");
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+  const colecoesExportColumns = [
+    { key: "numeroTombo", header: "Número de Tombo" },
+    { key: "identificacaoBasica", header: "Identificação Básica" },
+    { key: "clado", header: "Clado" },
+    { key: "filo", header: "Filo" },
+    { key: "classe", header: "Classe" },
+    { key: "determinador", header: "Determinador" },
+    { key: "numeroExemplares", header: "Exemplares" },
+    { key: "localidade", header: "Localidade" },
+    { key: "coletor", header: "Coletor" },
+    { key: "dataColeta", header: "Data Coleta" },
+    { key: "status", header: "Status Líquido" },
+    { key: "condicaoFrasco", header: "Condição Frasco" },
+  ];
+
+  const colecoesRequiredHeaders = [
+    { key: "numeroTombo", label: "Número de Tombo" },
+    { key: "identificacaoBasica", label: "Identificação Básica" },
+    { key: "clado", label: "Clado" },
+    { key: "filo", label: "Filo" },
+    { key: "classe", label: "Classe" },
+    { key: "determinador", label: "Determinador" },
+    { key: "localidade", label: "Localidade" },
+    { key: "coletor", label: "Coletor" },
+  ];
+
+  const handleBatchImportColecoes = async (rows: Record<string, any>[]) => {
+    const res = await fetch("/api/colecoes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(rows),
+    });
+
+    if (!res.ok) {
+      throw new Error("Falha ao salvar coleções no banco de dados.");
+    }
+    await fetchColecoes();
+  };
 
   const currentUser = authUser;
 
@@ -383,7 +425,11 @@ export default function ChannelsPage() {
                 </button>
               </div>
 
-              <Button variant="outline" onClick={handleExport} size="sm">
+              <Button variant="outline" onClick={() => setIsImportModalOpen(true)} size="sm">
+                <Upload className="h-4 w-4 mr-1.5" />
+                Importar Excel
+              </Button>
+              <Button variant="outline" onClick={() => setIsExportModalOpen(true)} size="sm">
                 <Download className="h-4 w-4 mr-1.5" />
                 Exportar
               </Button>
@@ -701,6 +747,25 @@ export default function ChannelsPage() {
           cancelText="Cancelar"
           variant="danger"
           isLoading={isDeleting}
+        />
+
+        {/* Modal de Exportação (PDF / Excel) */}
+        <ExportModal
+          isOpen={isExportModalOpen}
+          onClose={() => setIsExportModalOpen(false)}
+          title="Acervo de Coleções Sistemáticas"
+          data={filteredColecoes.length > 0 ? filteredColecoes : colecoes}
+          columns={colecoesExportColumns}
+          defaultFilename="LBSA_Relatorio_Colecoes"
+        />
+
+        {/* Modal de Importação (Excel) */}
+        <ImportModal
+          isOpen={isImportModalOpen}
+          onClose={() => setIsImportModalOpen(false)}
+          title="Coleções Sistemáticas"
+          requiredHeaders={colecoesRequiredHeaders}
+          onImportSuccess={handleBatchImportColecoes}
         />
       </main>
     </div>

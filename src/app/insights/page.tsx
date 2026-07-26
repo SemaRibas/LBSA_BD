@@ -14,12 +14,14 @@ import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Select } from "@/components/ui/Select";
 import { Material, UserWithoutPassword } from "@/types";
 import { MaterialCard } from "@/components/ui/MaterialCard";
-import { Search, Plus, Download, Layers, Table as TableIcon, Edit, Trash2, Box, LayoutGrid } from "lucide-react";
+import { Search, Plus, Download, Layers, Table as TableIcon, Edit, Trash2, Box, LayoutGrid, Upload } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
 import Smooth3DSlideshow, { Slide } from "@/components/ui/Smooth3DSlideshow";
 import { materiaisToSlides } from "@/lib/slideAdapters";
 
 import { useAuth } from "@/contexts/AuthContext";
+import { ExportModal } from "@/components/ui/ExportModal";
+import { ImportModal } from "@/components/ui/ImportModal";
 
 export default function InsightsPage() {
   const router = useRouter();
@@ -35,6 +37,37 @@ export default function InsightsPage() {
   const [activeMaterialFromSlide, setActiveMaterialFromSlide] = useState<Material | null>(null);
   const [filterEstado, setFilterEstado] = useState<string>("");
   const [viewMode, setViewMode] = useState<"cards" | "coverflow" | "table">("cards");
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+  const materiaisExportColumns = [
+    { key: "material", header: "Material / Reagente" },
+    { key: "quantidade", header: "Quantidade" },
+    { key: "estado", header: "Estado / Condição" },
+    { key: "validade", header: "Validade" },
+    { key: "observacoes", header: "Observações" },
+    { key: "creatorName", header: "Cadastrado Por" },
+  ];
+
+  const materiaisRequiredHeaders = [
+    { key: "material", label: "Material / Reagente" },
+    { key: "quantidade", label: "Quantidade" },
+    { key: "estado", label: "Estado" },
+    { key: "validade", label: "Validade" },
+  ];
+
+  const handleBatchImportMateriais = async (rows: Record<string, any>[]) => {
+    const res = await fetch("/api/materiais", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(rows),
+    });
+
+    if (!res.ok) {
+      throw new Error("Falha ao salvar materiais no banco de dados.");
+    }
+    await fetchMateriais();
+  };
 
   const currentUser = authUser;
 
@@ -333,7 +366,11 @@ export default function InsightsPage() {
                 </button>
               </div>
 
-              <Button variant="outline" onClick={handleExport} size="sm">
+              <Button variant="outline" onClick={() => setIsImportModalOpen(true)} size="sm">
+                <Upload className="h-4 w-4 mr-1.5" />
+                Importar Excel
+              </Button>
+              <Button variant="outline" onClick={() => setIsExportModalOpen(true)} size="sm">
                 <Download className="h-4 w-4 mr-1.5" />
                 Exportar
               </Button>
@@ -556,6 +593,25 @@ export default function InsightsPage() {
           cancelText="Cancelar"
           variant="danger"
           isLoading={isDeleting}
+        />
+
+        {/* Modal de Exportação (PDF / Excel) */}
+        <ExportModal
+          isOpen={isExportModalOpen}
+          onClose={() => setIsExportModalOpen(false)}
+          title="Inventário de Materiais LBSA"
+          data={filteredMateriais.length > 0 ? filteredMateriais : materiais}
+          columns={materiaisExportColumns}
+          defaultFilename="LBSA_Relatorio_Materiais"
+        />
+
+        {/* Modal de Importação (Excel) */}
+        <ImportModal
+          isOpen={isImportModalOpen}
+          onClose={() => setIsImportModalOpen(false)}
+          title="Inventário de Materiais"
+          requiredHeaders={materiaisRequiredHeaders}
+          onImportSuccess={handleBatchImportMateriais}
         />
       </main>
     </div>

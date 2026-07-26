@@ -31,6 +31,41 @@ export async function POST(request: NextRequest) {
   try {
     const user = getCurrentUser(request);
     const body = await request.json();
+
+    // Bulk array insertion for Excel imports
+    if (Array.isArray(body)) {
+      const createdItems: Colecao[] = [];
+      for (const item of body) {
+        if (!item.numeroTombo) continue;
+        const newItem: Colecao = {
+          id: item.id || generateId(),
+          numeroTombo: String(item.numeroTombo || "").trim(),
+          identificacaoBasica: String(item.identificacaoBasica || "").trim(),
+          clado: String(item.clado || "").trim(),
+          filo: String(item.filo || "").trim(),
+          subfilo: String(item.subfilo || "").trim(),
+          classe: String(item.classe || "").trim(),
+          determinador: String(item.determinador || "").trim(),
+          numeroExemplares: String(item.numeroExemplares || "").trim(),
+          localidade: String(item.localidade || "").trim(),
+          coletor: String(item.coletor || "").trim(),
+          dataColeta: String(item.dataColeta || "").trim(),
+          fonte: String(item.fonte || "").trim(),
+          condicaoFrasco: String(item.condicaoFrasco || "RAZOAVEL").trim(),
+          observacoes: String(item.observacoes || "").trim(),
+          estagiarioResponsavel: String(item.estagiarioResponsavel || "").trim(),
+          status: String(item.status || "TRANSPARENTE").trim(),
+          condicaoRecipiente: String(item.condicaoRecipiente || "FAVORAVEL").trim(),
+          imagemUrl: String(item.imagemUrl || "").trim(),
+          createdBy: user?.email || "admin@lbsa.uesb.br",
+          creatorName: user?.name || "Administrador",
+        };
+        await addRow(SHEET_NAME, newItem);
+        createdItems.push(newItem);
+      }
+      return NextResponse.json(createdItems, { status: 201 });
+    }
+
     const {
       numeroTombo,
       identificacaoBasica,
@@ -118,7 +153,6 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Role Permission Check: Pesquisador can ONLY edit their own created items
     if (user && user.role === "pesquisador" && existing.createdBy && existing.createdBy !== user.email) {
       return NextResponse.json(
         { error: "Pesquisador só pode modificar coleções cadastradas por ele mesmo." },
@@ -160,7 +194,6 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Role Permission Check: Pesquisador CANNOT delete items created by others
     if (user && user.role === "pesquisador" && existing.createdBy && existing.createdBy !== user.email) {
       return NextResponse.json(
         { error: "Pesquisador não tem permissão para excluir coleções de outros integrantes." },
