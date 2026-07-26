@@ -123,10 +123,10 @@ export default function KlarnaCarousel(props: KlarnaCarouselProps) {
         labelShow = true,
         labelX = 0,
         labelY = 0,
-        labelColor = "#ffffff",
+        labelColor,
         labelFont = {
             fontFamily: "Inter, sans-serif",
-            fontWeight: 600,
+            fontWeight: 700,
             fontSize: 22,
             lineHeight: "1.3em",
             letterSpacing: "0em",
@@ -301,8 +301,8 @@ export default function KlarnaCarousel(props: KlarnaCarouselProps) {
                     borderRadius: cardRadiusPx,
                     overflow: "hidden",
                     background: backgroundColor,
-                    boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.5)",
                 }}
+                className="shadow-xl dark:shadow-2xl border border-surface-200/80 dark:border-teal-500/30"
             >
                 <AnimatePresence mode="popLayout" initial={false} custom={dir}>
                     <motion.div
@@ -338,13 +338,13 @@ export default function KlarnaCarousel(props: KlarnaCarouselProps) {
                                 }}
                             />
                         ) : (
-                            <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-teal-600 to-surface-900 text-white p-6 text-center">
-                                <div className="w-24 h-24 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-3xl font-black mb-3 border border-white/20">
+                            <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-teal-500 to-teal-800 text-white p-6 text-center">
+                                <div className="w-24 h-24 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center text-3xl font-black mb-3 border border-white/20 shadow-md">
                                     {currentItem?.label ? currentItem.label.slice(0, 2).toUpperCase() : "LBSA"}
                                 </div>
-                                <div className="font-bold text-lg">{currentItem?.label}</div>
+                                <div className="font-extrabold text-lg">{currentItem?.label}</div>
                                 {currentItem?.sublabel && (
-                                    <div className="text-xs text-teal-200 mt-1">{currentItem.sublabel}</div>
+                                    <div className="text-xs text-teal-100 mt-1">{currentItem.sublabel}</div>
                                 )}
                             </div>
                         )}
@@ -365,7 +365,7 @@ export default function KlarnaCarousel(props: KlarnaCarouselProps) {
                             flex: "0 0 auto",
                             maxWidth: "100%",
                             textAlign: "center",
-                            color: labelColor,
+                            color: labelColor || "inherit",
                             transform: `translate(${labelX}px, ${labelY}px)`,
                             fontFamily: labelFont?.fontFamily,
                             fontWeight: labelFont?.fontWeight as any,
@@ -374,15 +374,17 @@ export default function KlarnaCarousel(props: KlarnaCarouselProps) {
                             letterSpacing: labelFont?.letterSpacing,
                             lineHeight: labelFont?.lineHeight,
                         }}
+                        className="text-surface-900 dark:text-white"
                     >
-                        <div className="flex flex-col items-center gap-1">
-                            <span className="drop-shadow-md">{currentItem?.label ?? ""}</span>
+                        <div className="flex flex-col items-center gap-1.5">
+                            <span className="drop-shadow-xs font-black">{currentItem?.label ?? ""}</span>
                             {currentItem?.badge && (
                                 <span
-                                    className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider shadow-sm border border-white/20"
+                                    className="px-3 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider shadow-2xs border"
                                     style={{
-                                        backgroundColor: currentItem.badgeBg || "rgba(20, 184, 166, 0.2)",
-                                        color: currentItem.badgeColor || "#2dd4bf",
+                                        backgroundColor: currentItem.badgeBg || "rgba(20, 184, 166, 0.15)",
+                                        color: currentItem.badgeColor || "#0d9488",
+                                        borderColor: currentItem.badgeColor ? `${currentItem.badgeColor}40` : "rgba(20, 184, 166, 0.3)",
                                     }}
                                 >
                                     {currentItem.badge}
@@ -429,29 +431,15 @@ export default function KlarnaCarousel(props: KlarnaCarouselProps) {
                             }}
                         >
                             <div
+                                className={`w-full h-full rounded-full overflow-hidden relative cursor-pointer active:scale-95 transition-all duration-200 ${
+                                    isActive
+                                        ? "bg-white ring-4 ring-teal-500 shadow-[0_0_20px_rgba(20,184,166,0.6)]"
+                                        : "bg-surface-200/90 dark:bg-surface-800/80 border border-surface-300 dark:border-surface-700 backdrop-blur-md shadow-sm"
+                                }`}
                                 style={{
-                                    width: "100%",
-                                    height: "100%",
-                                    borderRadius: buttonRadiusPx,
-                                    overflow: "hidden",
-                                    position: "relative",
                                     transform: `rotate(${-deg}deg)`,
                                     transformOrigin: "center",
-                                    background: isActive
-                                        ? "#ffffff"
-                                        : "rgba(255,255,255,0.25)",
-                                    boxShadow: isActive
-                                        ? "0 0 16px rgba(45, 212, 191, 0.8), 0 0 0 2px #2dd4bf"
-                                        : "0 4px 10px rgba(0, 0, 0, 0.3)",
-                                    backdropFilter: isActive
-                                        ? undefined
-                                        : "blur(6px)",
-                                    WebkitBackdropFilter: isActive
-                                        ? undefined
-                                        : "blur(6px)",
-                                    cursor: "pointer",
-                                    WebkitTapHighlightColor: "transparent",
-                                    transition: "box-shadow 0.2s ease, background 0.2s ease",
+                                    borderRadius: buttonRadiusPx,
                                 }}
                                 onClick={() => select(itemIdx)}
                             >
@@ -468,7 +456,7 @@ export default function KlarnaCarousel(props: KlarnaCarouselProps) {
                                         }}
                                     />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center font-black text-xs text-surface-900 bg-gradient-to-br from-teal-400 to-emerald-600 text-white">
+                                    <div className="w-full h-full flex items-center justify-center font-black text-xs bg-gradient-to-br from-teal-500 to-emerald-600 text-white">
                                         {item?.label ? item.label.slice(0, 2).toUpperCase() : "U"}
                                     </div>
                                 )}
