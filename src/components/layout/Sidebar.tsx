@@ -36,6 +36,10 @@ const Sidebar = ({ className }: SidebarProps) => {
       (!localStorage.getItem("theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
     setIsDark(isDarkMode);
     document.documentElement.classList.toggle("dark", isDarkMode);
+
+    const handleToggle = () => setIsOpen((prev) => !prev);
+    window.addEventListener("lbsa_toggle_sidebar", handleToggle);
+    return () => window.removeEventListener("lbsa_toggle_sidebar", handleToggle);
   }, []);
 
   const toggleTheme = () => {
@@ -58,15 +62,6 @@ const Sidebar = ({ className }: SidebarProps) => {
 
   return (
     <>
-      {/* Mobile menu button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label="Abrir menu"
-        className="lg:hidden fixed top-3.5 left-3.5 z-50 p-2.5 min-w-[44px] min-h-[44px] bg-teal-700 hover:bg-teal-600 text-white rounded-xl shadow-lg border border-teal-500/30 flex items-center justify-center transition-all active:scale-95"
-      >
-        {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-      </button>
-
       {/* Overlay */}
       {isOpen && (
         <div
@@ -79,13 +74,22 @@ const Sidebar = ({ className }: SidebarProps) => {
       <aside
         className={cn(
           "fixed left-0 top-0 h-full w-20 bg-gradient-to-b from-teal-700 to-teal-800",
-          "flex flex-col items-center pt-16 pb-6 lg:py-6 z-40",
+          "flex flex-col items-center pt-6 pb-6 z-40",
           "transition-transform duration-300 ease-in-out",
           "lg:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full",
           className
         )}
       >
+        {/* Mobile Close Button inside Sidebar */}
+        <button
+          onClick={() => setIsOpen(false)}
+          className="lg:hidden mb-2 p-2 text-teal-200 hover:text-white hover:bg-teal-600 rounded-xl transition-all"
+          aria-label="Fechar menu"
+        >
+          <X className="h-6 w-6" />
+        </button>
+
         {/* Logo Branca Grande */}
         <Link href="/" className="mb-4 flex flex-col items-center justify-center px-2 hover:scale-105 transition-transform" title="LBSA Dashboard">
           <img

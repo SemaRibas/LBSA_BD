@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { LogOut, User as UserIcon, Users, ChevronDown, Shield, Eye, Microscope } from "lucide-react";
+import { LogOut, User as UserIcon, Users, ChevronDown, Shield, Eye, Microscope, Menu } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserWithoutPassword, UserRole } from "@/types";
 import { getFirstAndSurnameInitials } from "@/lib/userUtils";
@@ -110,25 +110,35 @@ export function Header({ title, className }: HeaderProps) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 w-full bg-surface-50/90 dark:bg-surface-950/90 backdrop-blur-md py-3.5 px-2 sm:px-4 mb-6 border-b border-surface-200/60 dark:border-surface-800/60 transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs",
+        "sticky top-0 z-40 w-full bg-surface-50/90 dark:bg-surface-950/90 backdrop-blur-md py-2.5 px-3 sm:px-4 mb-4 sm:mb-6 border-b border-surface-200/60 dark:border-surface-800/60 transition-all duration-200 flex flex-row items-center justify-between gap-2 sm:gap-3 shadow-2xs",
         className
       )}
     >
-      {/* Page Title */}
-      <div className="flex items-center gap-3 pl-12 lg:pl-0 pt-0.5 sm:pt-0">
-        <h1 className="text-lg xs:text-xl sm:text-2xl font-black text-surface-900 dark:text-surface-100 uppercase tracking-wider">
+      {/* Page Title & Mobile Hamburger */}
+      <div className="flex items-center gap-2 xs:gap-3 min-w-0">
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new Event("lbsa_toggle_sidebar"))}
+          className="lg:hidden p-2 rounded-xl bg-teal-700/10 dark:bg-teal-500/20 text-teal-700 dark:text-teal-300 hover:bg-teal-700 hover:text-white border border-teal-500/20 shadow-2xs active:scale-95 transition-all shrink-0 flex items-center justify-center"
+          aria-label="Abrir menu"
+          title="Abrir menu de navegação"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+
+        <h1 className="text-sm xs:text-base sm:text-2xl font-black text-surface-900 dark:text-surface-100 uppercase tracking-wider truncate">
           {title}
         </h1>
       </div>
 
       {/* Right Area: Real-Time Presence & User Account */}
-      <div className="flex items-center gap-2.5 self-end sm:self-center max-w-full flex-wrap">
+      <div className="flex items-center gap-1.5 xs:gap-2.5 shrink-0 ml-auto">
         {/* Presence Status Widget Button */}
         <div className="relative">
           <button
             type="button"
             onClick={() => setPresenceOpen(!presenceOpen)}
-            className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-white dark:bg-surface-800/90 border border-surface-200/80 dark:border-surface-700/80 text-xs font-bold text-surface-800 dark:text-surface-200 hover:border-teal-500/50 shadow-2xs backdrop-blur-md transition-all active:scale-95"
+            className="flex items-center gap-1.5 xs:gap-2 px-2 py-1.5 xs:px-3 xs:py-2 rounded-2xl bg-white dark:bg-surface-800/90 border border-surface-200/80 dark:border-surface-700/80 text-xs font-bold text-surface-800 dark:text-surface-200 hover:border-teal-500/50 shadow-2xs backdrop-blur-md transition-all active:scale-95"
             title="Ver integrantes online e offline em tempo real"
           >
             {/* Pulsing Green Online Indicator */}
@@ -137,13 +147,13 @@ export function Header({ title, className }: HeaderProps) {
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
             </div>
 
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1 xs:gap-1.5 text-[11px] xs:text-xs">
               <span className="text-emerald-700 dark:text-emerald-400 font-extrabold">
-                {presenceData.online.length} Online
+                {presenceData.online.length} <span className="hidden xs:inline">Online</span>
               </span>
               <span className="text-surface-400 dark:text-surface-500">•</span>
               <span className="text-surface-500 dark:text-surface-400 font-medium">
-                {presenceData.offline.length} Offline
+                {presenceData.offline.length} <span className="hidden xs:inline">Offline</span>
               </span>
             </div>
 
@@ -277,38 +287,38 @@ export function Header({ title, className }: HeaderProps) {
 
         {/* User Account Card */}
         {user && (
-          <div className="flex items-center justify-between gap-3 bg-white dark:bg-surface-800/90 px-3.5 py-2 rounded-2xl border border-surface-200/80 dark:border-surface-700/80 shadow-2xs max-w-full backdrop-blur-md">
-            <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center justify-between gap-1.5 xs:gap-3 bg-white dark:bg-surface-800/90 px-2 py-1.5 xs:px-3.5 xs:py-2 rounded-2xl border border-surface-200/80 dark:border-surface-700/80 shadow-2xs max-w-full backdrop-blur-md">
+            <div className="flex items-center gap-1.5 xs:gap-2 min-w-0">
               {user.imagemUrl ? (
                 <img
                   src={user.imagemUrl}
                   alt={user.name || ""}
-                  className="w-8 h-8 rounded-xl object-cover border border-teal-500/40 shadow-xs shrink-0"
+                  className="w-7 h-7 xs:w-8 xs:h-8 rounded-xl object-cover border border-teal-500/40 shadow-xs shrink-0"
                 />
               ) : (
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-700 text-white flex items-center justify-center text-xs font-black shadow-md shrink-0">
+                <div className="w-7 h-7 xs:w-8 xs:h-8 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-700 text-white flex items-center justify-center text-xs font-black shadow-md shrink-0">
                   {userInitials}
                 </div>
               )}
               <div className="flex flex-col min-w-0">
-                <span className="text-[10px] text-surface-500 dark:text-surface-400 font-bold uppercase leading-none tracking-wider">
+                <span className="hidden sm:inline text-[9px] text-surface-500 dark:text-surface-400 font-bold uppercase leading-none tracking-wider">
                   Conectado
                 </span>
-                <span className="text-xs sm:text-sm font-extrabold text-surface-900 dark:text-surface-100 truncate max-w-[110px] xs:max-w-[160px] sm:max-w-[200px]">
-                  {user.name || user.email}
+                <span className="text-xs font-extrabold text-surface-900 dark:text-surface-100 truncate max-w-[70px] xs:max-w-[120px] sm:max-w-[180px]">
+                  {user.name?.split(" ")[0] || user.email?.split("@")[0]}
                 </span>
               </div>
             </div>
 
-            <div className="h-6 w-px bg-surface-200 dark:bg-surface-700 shrink-0" />
+            <div className="h-5 w-px bg-surface-200 dark:bg-surface-700 shrink-0" />
 
             <button
               onClick={logout}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-600 dark:text-red-400 hover:text-white hover:bg-red-600 dark:hover:bg-red-600 rounded-xl transition-all duration-200 shadow-2xs shrink-0 active:scale-95"
+              className="flex items-center gap-1 px-2 py-1 text-xs font-bold text-red-600 dark:text-red-400 hover:text-white hover:bg-red-600 dark:hover:bg-red-600 rounded-xl transition-all duration-200 shadow-2xs shrink-0 active:scale-95"
               title="Sair da conta"
             >
               <LogOut className="h-3.5 w-3.5" />
-              <span>Sair</span>
+              <span className="hidden xs:inline">Sair</span>
             </button>
           </div>
         )}
