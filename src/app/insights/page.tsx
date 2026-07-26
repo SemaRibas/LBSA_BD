@@ -22,6 +22,7 @@ import { materiaisToSlides } from "@/lib/slideAdapters";
 import { useAuth } from "@/contexts/AuthContext";
 import { ExportModal } from "@/components/ui/ExportModal";
 import { ImportModal } from "@/components/ui/ImportModal";
+import { ImageUploadInput } from "@/components/ui/ImageUploadInput";
 
 export default function InsightsPage() {
   const router = useRouter();
@@ -544,11 +545,10 @@ export default function InsightsPage() {
               value={formData.validade}
               onChange={(e) => setFormData({ ...formData, validade: e.target.value })}
             />
-            <Input
-              label="URL da Imagem / Foto do Material (Planilha)"
-              placeholder="Ex: https://exemplo.com/foto-microscopio.jpg"
+            <ImageUploadInput
+              label="Imagem do Material / Reagente (Upload ou URL)"
               value={formData.imagemUrl}
-              onChange={(e) => setFormData({ ...formData, imagemUrl: e.target.value })}
+              onChange={(val) => setFormData({ ...formData, imagemUrl: val })}
             />
             <Input
               label="Observações"

@@ -4,8 +4,7 @@ import { useRef } from "react";
 import { Colecao, UserWithoutPassword } from "@/types";
 import { Badge } from "./Badge";
 import { Button } from "./Button";
-import { Edit, Trash2, MapPin, Tag, Box, Layers, User } from "lucide-react";
-import { getColecaoImages } from "@/lib/slideAdapters";
+import { Edit, Trash2, MapPin, Tag, Box, Layers, User, Search } from "lucide-react";
 import ImageFlip from "./ImageFlip";
 
 interface ColecaoCardProps {
@@ -19,13 +18,11 @@ interface ColecaoCardProps {
 
 export function ColecaoCard({
   colecao,
-  index = 0,
   currentUser,
   onEdit,
   onDelete,
   onSelect3D,
 }: ColecaoCardProps) {
-  const images = getColecaoImages(colecao, index);
   const taxoList = [colecao.filo, colecao.classe, colecao.subfilo]
     .filter((t) => t && t !== "-")
     .join(" > ");
@@ -56,6 +53,8 @@ export function ColecaoCard({
     el.style.transform = `rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
   };
 
+  const hasImage = Boolean(colecao.imagemUrl && colecao.imagemUrl.trim() !== "");
+
   return (
     <div style={{ perspective: "900px" }} className="w-full h-full">
       <div
@@ -69,17 +68,28 @@ export function ColecaoCard({
         }}
         className="group relative flex flex-col bg-white dark:bg-surface-900 border border-surface-200 dark:border-teal-500/20 hover:border-teal-500/50 rounded-2xl overflow-hidden shadow-md hover:shadow-2xl hover:shadow-teal-500/20 transition-shadow duration-300"
       >
-        {/* Header Image with 3D Flip Gallery */}
-        <div className="relative h-48 w-full p-2 bg-surface-100 dark:bg-surface-950 overflow-hidden">
-          <ImageFlip
-            images={images}
-            rounded={13}
-            fit="cover"
-            tilt={false}
-          />
+        {/* Header Image or Default Search (Lupa) Icon Header */}
+        <div className="relative h-48 w-full p-2 bg-gradient-to-br from-teal-500/10 via-surface-100 to-emerald-500/10 dark:from-teal-950/40 dark:via-surface-950 dark:to-emerald-950/40 overflow-hidden flex flex-col items-center justify-center">
+          {hasImage ? (
+            <ImageFlip
+              images={[{ image: { src: colecao.imagemUrl, alt: `${colecao.numeroTombo} - ${colecao.identificacaoBasica}` } }]}
+              rounded={13}
+              fit="cover"
+              tilt={false}
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center gap-2 text-teal-600/80 dark:text-teal-400/70 py-4 transition-transform group-hover:scale-110">
+              <div className="p-3.5 rounded-2xl bg-teal-100/60 dark:bg-teal-900/30 border border-teal-300/40 dark:border-teal-700/40 shadow-inner">
+                <Search className="h-12 w-12 text-teal-600 dark:text-teal-400" />
+              </div>
+              <span className="text-[11px] font-bold tracking-wider uppercase text-teal-700 dark:text-teal-300">
+                Coleção Sistemática
+              </span>
+            </div>
+          )}
 
           {/* Top Badges */}
-          <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-2 z-10 pointer-events-none">
+          <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 z-10 pointer-events-none">
             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-white/90 dark:bg-surface-950/80 backdrop-blur-md text-teal-700 dark:text-teal-300 border border-teal-500/30 shadow-md">
               {colecao.numeroTombo}
             </span>
@@ -91,7 +101,7 @@ export function ColecaoCard({
           </div>
 
           {/* Exemplares Pill */}
-          <div className="absolute bottom-4 left-4 flex items-center gap-1 bg-white/90 dark:bg-teal-950/80 backdrop-blur-md text-teal-700 dark:text-teal-300 px-2.5 py-1 rounded-lg border border-teal-500/30 text-xs font-semibold z-10 pointer-events-none">
+          <div className="absolute bottom-3 left-3 flex items-center gap-1 bg-white/90 dark:bg-teal-950/80 backdrop-blur-md text-teal-700 dark:text-teal-300 px-2.5 py-1 rounded-lg border border-teal-500/30 text-xs font-semibold z-10 pointer-events-none">
             <Box className="h-3.5 w-3.5" />
             <span>{colecao.numeroExemplares || "1"} ex.</span>
           </div>

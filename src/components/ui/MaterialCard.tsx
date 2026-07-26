@@ -4,8 +4,7 @@ import { useRef } from "react";
 import { Material, UserWithoutPassword } from "@/types";
 import { Badge } from "./Badge";
 import { Button } from "./Button";
-import { Edit, Trash2, Calendar, FileText, Layers, Package, User } from "lucide-react";
-import { getMaterialImages } from "@/lib/slideAdapters";
+import { Edit, Trash2, Calendar, FileText, Layers, Package, User, PackageOpen } from "lucide-react";
 import ImageFlip from "./ImageFlip";
 
 interface MaterialCardProps {
@@ -19,13 +18,11 @@ interface MaterialCardProps {
 
 export function MaterialCard({
   material,
-  index = 0,
   currentUser,
   onEdit,
   onDelete,
   onSelect3D,
 }: MaterialCardProps) {
-  const images = getMaterialImages(material, index);
   const isConservado = material.estado === "Conservado";
   const tiltRef = useRef<HTMLDivElement | null>(null);
 
@@ -52,6 +49,8 @@ export function MaterialCard({
     el.style.transform = `rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
   };
 
+  const hasImage = Boolean(material.imagemUrl && material.imagemUrl.trim() !== "");
+
   return (
     <div style={{ perspective: "900px" }} className="w-full h-full">
       <div
@@ -65,17 +64,28 @@ export function MaterialCard({
         }}
         className="group relative flex flex-col bg-white dark:bg-surface-900 border border-surface-200 dark:border-teal-500/20 hover:border-teal-500/50 rounded-2xl overflow-hidden shadow-md hover:shadow-2xl hover:shadow-teal-500/20 transition-shadow duration-300"
       >
-        {/* Header Image with 3D Flip Gallery */}
-        <div className="relative h-48 w-full p-2 bg-surface-100 dark:bg-surface-950 overflow-hidden">
-          <ImageFlip
-            images={images}
-            rounded={13}
-            fit="cover"
-            tilt={false}
-          />
+        {/* Header Image or Default PackageOpen Icon Header */}
+        <div className="relative h-48 w-full p-2 bg-gradient-to-br from-amber-500/10 via-surface-100 to-teal-500/10 dark:from-amber-950/40 dark:via-surface-950 dark:to-teal-950/40 overflow-hidden flex flex-col items-center justify-center">
+          {hasImage ? (
+            <ImageFlip
+              images={[{ image: { src: material.imagemUrl, alt: material.material } }]}
+              rounded={13}
+              fit="cover"
+              tilt={false}
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center gap-2 text-amber-600/80 dark:text-amber-400/70 py-4 transition-transform group-hover:scale-110">
+              <div className="p-3.5 rounded-2xl bg-amber-100/60 dark:bg-amber-900/30 border border-amber-300/40 dark:border-amber-700/40 shadow-inner">
+                <PackageOpen className="h-12 w-12 text-amber-600 dark:text-amber-400" />
+              </div>
+              <span className="text-[11px] font-bold tracking-wider uppercase text-amber-700 dark:text-amber-300">
+                Inventário / Material
+              </span>
+            </div>
+          )}
 
           {/* Top Badges */}
-          <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-2 z-10 pointer-events-none">
+          <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 z-10 pointer-events-none">
             <Badge variant={isConservado ? "success" : "warning"} className="shadow-md">
               {material.estado || "Cadastrado"}
             </Badge>

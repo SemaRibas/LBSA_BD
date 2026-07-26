@@ -21,6 +21,7 @@ import { colecoesToSlides } from "@/lib/slideAdapters";
 import { useAuth } from "@/contexts/AuthContext";
 import { ExportModal } from "@/components/ui/ExportModal";
 import { ImportModal } from "@/components/ui/ImportModal";
+import { ImageUploadInput } from "@/components/ui/ImageUploadInput";
 
 export default function ChannelsPage() {
   const router = useRouter();
@@ -696,11 +697,10 @@ export default function ChannelsPage() {
               onChange={(e) => setFormData({ ...formData, estagiarioResponsavel: e.target.value })}
             />
 
-            <Input
-              label="URL da Imagem / Foto do Exemplar (Planilha)"
-              placeholder="Ex: https://exemplo.com/foto-frasco.jpg"
+            <ImageUploadInput
+              label="Imagem do Exemplar / Frasco (Upload ou URL)"
               value={formData.imagemUrl}
-              onChange={(e) => setFormData({ ...formData, imagemUrl: e.target.value })}
+              onChange={(val) => setFormData({ ...formData, imagemUrl: val })}
             />
 
             <Input
