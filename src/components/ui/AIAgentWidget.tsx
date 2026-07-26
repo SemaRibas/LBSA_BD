@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Sparkles, X, Send, FileSpreadsheet, Bot, User as UserIcon, CheckCircle2, AlertCircle, RefreshCw, Zap } from "lucide-react";
+import { Sparkles, X, Send, FileSpreadsheet, Bot, User as UserIcon, CheckCircle2, AlertCircle, RefreshCw, Zap, ChevronLeft } from "lucide-react";
 import { parseExcelFile } from "@/lib/exportImportUtils";
 import { getAIRateLimitStatus, incrementAIRateLimit, RateLimitResult } from "@/lib/rateLimiter";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,6 +29,7 @@ export function AIAgentWidget({ isOpen: externalIsOpen, onClose: externalOnClose
   const { user } = useAuth();
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  const [isHovered, setIsHovered] = useState(false);
 
   const [inputMessage, setInputMessage] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -268,19 +269,37 @@ export function AIAgentWidget({ isOpen: externalIsOpen, onClose: externalOnClose
 
   return (
     <>
-      {/* Floating Trigger Button (Bottom Right) */}
-      <button
-        type="button"
-        onClick={toggleOpen}
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3.5 rounded-full bg-gradient-to-r from-teal-600 via-teal-500 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-extrabold shadow-2xl hover:shadow-teal-500/40 hover:scale-105 active:scale-95 transition-all group border-2 border-white/30 backdrop-blur-lg"
-        title="Abrir Agente de IA LBSA (Canto Inferior Direito)"
+      {/* Collapsible Floating Edge Tab (Fixed at Bottom-Right Edge) */}
+      <div
+        className="fixed bottom-6 right-0 z-50 flex items-center group cursor-pointer"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        <Sparkles className="h-5 w-5 animate-pulse text-amber-300" />
-        <span className="text-xs tracking-wide">Agente LBSA IA</span>
-        <span className="px-2 py-0.5 rounded-full bg-white/20 text-[10px] font-mono">
-          {rateLimit.remaining}/20
-        </span>
-      </button>
+        <button
+          type="button"
+          onClick={toggleOpen}
+          className={`flex items-center gap-2.5 py-3 px-3.5 rounded-l-2xl bg-gradient-to-r from-teal-700 via-teal-600 to-emerald-600 text-white font-extrabold shadow-2xl hover:shadow-teal-500/50 border-l-2 border-t-2 border-b-2 border-white/30 backdrop-blur-xl transition-all duration-300 transform active:scale-95 ${
+            isHovered ? "translate-x-0 pr-4" : "translate-x-1.5 opacity-90 hover:opacity-100"
+          }`}
+          title="Agente de IA LBSA (Passe o mouse para abrir)"
+        >
+          {/* Edge Indicator Arrow & Sparkles Icon */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <ChevronLeft className={`h-4 w-4 text-amber-300 transition-transform duration-300 ${isHovered ? "rotate-180" : "animate-pulse"}`} />
+            <Sparkles className="h-5 w-5 animate-pulse text-amber-300" />
+          </div>
+
+          {/* Expanded Label (Revealed on Hover) */}
+          <div className={`flex items-center gap-2 overflow-hidden transition-all duration-300 whitespace-nowrap ${
+            isHovered ? "max-w-[200px] opacity-100" : "max-w-0 opacity-0"
+          }`}>
+            <span className="text-xs font-black tracking-wide">Agente LBSA IA</span>
+            <span className="px-2 py-0.5 rounded-full bg-white/20 text-[10px] font-mono font-bold text-amber-200">
+              {rateLimit.remaining}/20
+            </span>
+          </div>
+        </button>
+      </div>
 
       {/* Floating Panel / Drawer */}
       {isOpen && (
