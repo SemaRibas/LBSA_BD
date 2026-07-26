@@ -246,7 +246,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-surface-50 dark:bg-surface-950">
       <Sidebar />
 
-      <main className="lg:ml-20 p-4 sm:p-6 lg:p-8 overflow-x-hidden max-w-full">
+      <main className="lg:ml-20 p-4 sm:p-6 lg:p-8">
         <Header title="Dashboard" activeTab="Insights" />
 
         {/* Electric Hero Logo Banner */}
