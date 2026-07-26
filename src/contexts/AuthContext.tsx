@@ -8,6 +8,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  updateUser: (updatedFields: Partial<UserWithoutPassword>) => void;
   isLoading: boolean;
 }
 
@@ -164,8 +165,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.location.href = "/login";
   };
 
+  const updateUser = (updatedFields: Partial<UserWithoutPassword>) => {
+    setUser((prev) => {
+      if (!prev) return null;
+      const updated = { ...prev, ...updatedFields };
+      saveSessionUser(updated);
+      updatePresence(updated, true);
+      return updated;
+    });
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, register, logout, updateUser, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

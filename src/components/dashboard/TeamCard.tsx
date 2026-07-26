@@ -21,6 +21,7 @@ import {
   User as UserIcon,
 } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
+import { useAuth } from "@/contexts/AuthContext";
 import KlarnaCarousel, { CarouselItem } from "@/components/ui/KlarnaCarousel";
 import { getFirstAndSurnameInitials } from "@/lib/userUtils";
 
@@ -44,6 +45,7 @@ const DEFAULT_TEAM_MEMBERS: UserWithoutPassword[] = [
 
 export function TeamCard({ users, currentUser, onUserRoleChange, onUserProfileUpdate }: TeamCardProps) {
   const toast = useToast();
+  const { updateUser } = useAuth();
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
@@ -99,9 +101,9 @@ export function TeamCard({ users, currentUser, onUserRoleChange, onUserProfileUp
 
       if (res.ok) {
         const updated = await res.json();
-        toast.success("Foto de Perfil Atualizada!", `A foto de ${activeUser.name} foi atualizada com sucesso.`);
+        toast.success("Foto de Perfil Atualizada!", `A foto de ${activeUser.name} foi substituída com sucesso.`);
         
-        // Save local backup in localStorage
+        // Clean old local storage cache
         try {
           if (avatarValue) {
             localStorage.setItem(`lbsa_user_avatar_${userId}`, avatarValue);
@@ -109,6 +111,11 @@ export function TeamCard({ users, currentUser, onUserRoleChange, onUserProfileUp
             localStorage.removeItem(`lbsa_user_avatar_${userId}`);
           }
         } catch {}
+
+        // Overwrite active logged-in user state if updating own profile
+        if (currentUser?.id === userId) {
+          updateUser({ imagemUrl: avatarValue });
+        }
 
         setLocalUsers((prev) => {
           const list = prev.length > 0 ? prev : displayUsers;
@@ -164,13 +171,7 @@ export function TeamCard({ users, currentUser, onUserRoleChange, onUserProfileUp
 
   const carouselItems: CarouselItem[] = useMemo(() => {
     return displayUsers.map((user) => {
-      let savedAvatar: string | null = null;
-      if (typeof window !== "undefined") {
-        try {
-          savedAvatar = localStorage.getItem(`lbsa_user_avatar_${user.id}`);
-        } catch {}
-      }
-      const avatarUrl = user.imagemUrl || savedAvatar || "";
+      const avatarUrl = user.imagemUrl || "";
       const roleConfig = getRoleBadgeConfig(user.role || "pesquisador");
 
       return {
