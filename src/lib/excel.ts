@@ -33,6 +33,9 @@ async function getDoc(): Promise<GoogleSpreadsheet> {
 async function ensureHeaders(sheet: any, sheetName: string) {
   try {
     await sheet.loadHeaderRow();
+    if (sheetName === "Usuarios" && sheet.headerValues && !sheet.headerValues.includes("imagemUrl")) {
+      await sheet.setHeaderRow([...sheet.headerValues, "imagemUrl"]);
+    }
   } catch {
     if (sheetName === "Materiais") {
       await sheet.setHeaderRow(["id", "material", "quantidade", "estado", "validade", "observacoes", "imagemUrl", "createdBy", "creatorName"]);
@@ -45,7 +48,7 @@ async function ensureHeaders(sheet: any, sheetName: string) {
         "status", "condicaoRecipiente", "imagemUrl", "createdBy", "creatorName"
       ]);
     } else if (sheetName === "Usuarios") {
-      await sheet.setHeaderRow(["id", "name", "email", "password", "role", "createdAt"]);
+      await sheet.setHeaderRow(["id", "name", "email", "password", "role", "createdAt", "imagemUrl"]);
     }
   }
 }

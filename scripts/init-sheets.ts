@@ -38,7 +38,7 @@ async function initSheets() {
     if (!usersSheet) {
       usersSheet = await doc.addSheet({
         title: "Usuarios",
-        headerValues: ["id", "name", "email", "password", "role", "createdAt"],
+        headerValues: ["id", "name", "email", "password", "role", "createdAt", "imagemUrl"],
       });
       console.log("Aba 'Usuarios' criada");
     } else {

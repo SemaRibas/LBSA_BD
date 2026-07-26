@@ -190,13 +190,9 @@ export function TeamCard({ users, currentUser, onUserRoleChange, onUserProfileUp
                 <h3 className="text-xl font-black text-surface-900 dark:text-white tracking-tight">
                   Integrantes da Equipe & Funções
                 </h3>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-teal-50 dark:bg-teal-500/20 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-500/30">
-                  <Sparkles className="h-3 w-3" />
-                  Originkit Carousel
-                </span>
               </div>
               <p className="text-xs text-surface-500 dark:text-teal-100/70 mt-0.5">
-                Membros ativos do LBSA • Navegue e interaja usando o carrossel curvado 3D
+                Membros ativos do LBSA
               </p>
             </div>
           </div>
