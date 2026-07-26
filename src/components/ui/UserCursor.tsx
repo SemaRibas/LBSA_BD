@@ -34,20 +34,22 @@ export default function UserCursor(props: UserCursorProps) {
         color = "#0d9488",
         textColor = "#ffffff",
         size = 28,
-        labelTiltStrength = 22,
+        labelTiltStrength = 18,
         showLabel = true,
         offsetX = 0,
         offsetY = 0,
-        labelOffsetX = 22,
-        labelOffsetY = 10,
+        labelOffsetX = 20,
+        labelOffsetY = 8,
         pressScale = 0.9,
-        fullScreen = true,
     } = props;
 
     const [isTouchDevice, setIsTouchDevice] = useState(false);
     const [hovering, setHovering] = useState(false);
     const [pressed, setPressed] = useState(false);
     const [isPointerState, setIsPointerState] = useState(false);
+
+    const hoveringRef = useRef(false);
+    const pointerRef = useRef(false);
 
     // Touch device detection
     useEffect(() => {
@@ -61,7 +63,7 @@ export default function UserCursor(props: UserCursorProps) {
         }
     }, []);
 
-    // Hide native cursor globally when fullScreen is active
+    // Hide native cursor globally when fine pointer is active
     useEffect(() => {
         if (isTouchDevice || typeof document === "undefined") return;
         document.body.classList.add("custom-cursor-active");
@@ -70,16 +72,18 @@ export default function UserCursor(props: UserCursorProps) {
         };
     }, [isTouchDevice]);
 
-    // Motion values & springs
+    // Ultra-snappy Motion values & high-stiffness low-mass springs for zero delay
     const mouseX = useMotionValue(-9999);
     const mouseY = useMotionValue(-9999);
 
+    // Arrow tip: High stiffness (1500) & low mass (0.05) = Instant 1:1 hardware pointer response
     const arrowSpringCfg: SpringOptions = useMemo(
-        () => ({ stiffness: 420, damping: 32, mass: 0.5 }),
+        () => ({ stiffness: 1500, damping: 50, mass: 0.05 }),
         []
     );
+    // Label pill: Snappy spring trailing closely behind
     const labelSpringCfg: SpringOptions = useMemo(
-        () => ({ stiffness: 240, damping: 26, mass: 0.6 }),
+        () => ({ stiffness: 600, damping: 30, mass: 0.12 }),
         []
     );
 
@@ -92,23 +96,23 @@ export default function UserCursor(props: UserCursorProps) {
     useEffect(() => {
         const controls = animate(scaleMV, pressed ? pressScale : isPointerState ? 1.15 : 1, {
             type: "spring",
-            stiffness: 500,
-            damping: 28,
-            mass: 0.5,
+            stiffness: 600,
+            damping: 30,
+            mass: 0.3,
         });
         return () => controls.stop();
     }, [pressed, isPointerState, pressScale, scaleMV]);
 
     const labelTiltTarget = useMotionValue(0);
     const labelRotation = useSpring(labelTiltTarget, {
-        stiffness: 200,
-        damping: 24,
-        mass: 0.6,
+        stiffness: 300,
+        damping: 25,
+        mass: 0.3,
     });
 
     const lastSampleRef = useRef<{ x: number; y: number; t: number } | null>(null);
 
-    // Mouse tracking & hand pointer ("mãozinha") detection
+    // High-performance Mouse tracking & guarded state updates
     useEffect(() => {
         if (isTouchDevice || typeof window === "undefined") return;
 
@@ -116,26 +120,28 @@ export default function UserCursor(props: UserCursorProps) {
             const x = e.clientX;
             const y = e.clientY;
 
-            const now = performance.now();
-            const last = lastSampleRef.current;
-            let vx = 0;
-            let vy = 0;
-            if (last) {
-                const dt = Math.max(1, now - last.t);
-                vx = ((x - last.x) / dt) * 1000;
-                vy = ((y - last.y) / dt) * 1000;
-            }
-            lastSampleRef.current = { x, y, t: now };
-
+            // Direct 1:1 mouse position update
             mouseX.set(x + offsetX);
             mouseY.set(y + offsetY);
 
-            const speed = Math.hypot(vx, vy);
-            const norm = Math.min(1, speed / 1500);
-            const sign = vx === 0 ? 0 : vx > 0 ? 1 : -1;
-            labelTiltTarget.set(sign * norm * labelTiltStrength);
+            // Velocity calculation for label tilt
+            const now = performance.now();
+            const last = lastSampleRef.current;
+            if (last) {
+                const dt = Math.max(1, now - last.t);
+                const vx = ((x - last.x) / dt) * 1000;
+                const vy = ((y - last.y) / dt) * 1000;
+                const speed = Math.hypot(vx, vy);
+                const norm = Math.min(1, speed / 1600);
+                const sign = vx === 0 ? 0 : vx > 0 ? 1 : -1;
+                labelTiltTarget.set(sign * norm * labelTiltStrength);
+            }
+            lastSampleRef.current = { x, y, t: now };
 
-            setHovering(true);
+            if (!hoveringRef.current) {
+                hoveringRef.current = true;
+                setHovering(true);
+            }
 
             // Detect if element under cursor is clickable / hand pointer ("mãozinha")
             const target = e.target as HTMLElement | null;
@@ -145,7 +151,11 @@ export default function UserCursor(props: UserCursorProps) {
                         "a, button, input, select, textarea, [role='button'], [tabindex], label, .cursor-pointer"
                     ) !== null ||
                     window.getComputedStyle(target).cursor === "pointer";
-                setIsPointerState(isClickable);
+
+                if (isClickable !== pointerRef.current) {
+                    pointerRef.current = isClickable;
+                    setIsPointerState(isClickable);
+                }
             }
         };
 
@@ -153,14 +163,15 @@ export default function UserCursor(props: UserCursorProps) {
         const onUp = () => setPressed(false);
 
         const onLeave = () => {
+            hoveringRef.current = false;
             setHovering(false);
             lastSampleRef.current = null;
             labelTiltTarget.set(0);
         };
 
         window.addEventListener("mousemove", onMove, { passive: true });
-        window.addEventListener("mousedown", onDown);
-        window.addEventListener("mouseup", onUp);
+        window.addEventListener("mousedown", onDown, { passive: true });
+        window.addEventListener("mouseup", onUp, { passive: true });
         document.body.addEventListener("mouseleave", onLeave);
 
         return () => {
@@ -206,7 +217,7 @@ export default function UserCursor(props: UserCursorProps) {
                             : "0 4px 12px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.15)",
                         opacity: hovering ? 1 : 0,
                         transformOrigin: "0% 50%",
-                        transition: "opacity 140ms ease, background 200ms ease",
+                        transition: "opacity 100ms ease, background 150ms ease",
                         willChange: "transform, opacity",
                         userSelect: "none",
                         pointerEvents: "none",
@@ -244,7 +255,7 @@ export default function UserCursor(props: UserCursorProps) {
                     height: size,
                     opacity: hovering ? 1 : 0,
                     transformOrigin: "0% 0%",
-                    transition: "opacity 140ms ease",
+                    transition: "opacity 100ms ease",
                     willChange: "transform, opacity",
                     pointerEvents: "none",
                 }}
