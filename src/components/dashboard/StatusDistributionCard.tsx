@@ -21,10 +21,23 @@ export function StatusDistributionCard({ colecoes }: StatusDistributionCardProps
     const turvo = colecoes.filter((c) => c.status === "LIQUIDO_TURVO").length;
     const seco = colecoes.filter((c) => c.status === "SECO").length;
 
-    // Condição do Frasco / Recipiente
-    const frascoBom = colecoes.filter((c) => c.condicaoRecipiente === "FAVORAVEL" || c.condicaoFrasco === "BOM").length;
-    const frascoRazoavel = colecoes.filter((c) => c.condicaoRecipiente === "REGULAR" || c.condicaoFrasco === "RAZOAVEL").length;
-    const frascoCritico = colecoes.filter((c) => c.condicaoRecipiente === "DESFAVORAVEL" || c.condicaoFrasco === "CRITICO").length;
+    // Condição do Frasco / Recipiente (Mutuamente exclusivo)
+    let frascoBom = 0;
+    let frascoRazoavel = 0;
+    let frascoCritico = 0;
+
+    colecoes.forEach((c) => {
+      const fVal = String(c.condicaoFrasco || "").toUpperCase();
+      const rVal = String(c.condicaoRecipiente || "").toUpperCase();
+
+      if (fVal === "CRITICO" || rVal === "DESFAVORAVEL") {
+        frascoCritico++;
+      } else if (fVal === "RAZOAVEL" || rVal === "REGULAR") {
+        frascoRazoavel++;
+      } else {
+        frascoBom++;
+      }
+    });
 
     // Urgentes / Atenção
     const itensCriticos = colecoes.filter(
