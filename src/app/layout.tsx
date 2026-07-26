@@ -15,6 +15,7 @@ export const metadata: Metadata = {
 };
 
 import UserCursor from "@/components/ui/UserCursor";
+import GlobalAIAgent from "@/components/ui/GlobalAIAgent";
 
 export default function RootLayout({
   children,
@@ -51,6 +52,7 @@ export default function RootLayout({
           <AuthProvider>
             <UserCursor />
             {children}
+            <GlobalAIAgent />
           </AuthProvider>
         </ToastProvider>
       </body>

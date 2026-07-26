@@ -2,11 +2,10 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { LogOut, User as UserIcon, Users, ChevronDown, Shield, Eye, Microscope, Sparkles } from "lucide-react";
+import { LogOut, User as UserIcon, Users, ChevronDown, Shield, Eye, Microscope } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserWithoutPassword, UserRole } from "@/types";
 import { getFirstAndSurnameInitials } from "@/lib/userUtils";
-import { AIAgentWidget } from "@/components/ui/AIAgentWidget";
 
 interface HeaderProps {
   title: string;
@@ -20,7 +19,6 @@ export function Header({ title, className }: HeaderProps) {
   const [allUsers, setAllUsers] = useState<UserWithoutPassword[]>([]);
   const [presenceOpen, setPresenceOpen] = useState(false);
   const [presenceTick, setPresenceTick] = useState(0);
-  const [isAIAgentOpen, setIsAIAgentOpen] = useState(false);
 
   // Fetch team users to compute presence status
   useEffect(() => {
@@ -315,16 +313,6 @@ export function Header({ title, className }: HeaderProps) {
           </div>
         )}
       </div>
-
-      {/* Embedded Floating AI Agent Widget */}
-      <AIAgentWidget
-        isOpen={isAIAgentOpen}
-        onClose={() => setIsAIAgentOpen(false)}
-        onDataRegistered={() => {
-          // Trigger page update if on dashboard/colecoes/materiais
-          window.dispatchEvent(new Event("lbsa_data_registered"));
-        }}
-      />
     </header>
   );
 }
