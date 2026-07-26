@@ -270,9 +270,10 @@ export function AIAgentWidget({ isOpen: externalIsOpen, onClose: externalOnClose
     <>
       {/* Floating Trigger Button (Bottom Right) */}
       <button
+        type="button"
         onClick={toggleOpen}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-teal-600 via-teal-500 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-extrabold shadow-2xl hover:shadow-teal-500/40 hover:scale-105 active:scale-95 transition-all group border border-white/20"
-        title="Abrir Agente de IA LBSA"
+        className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3.5 rounded-full bg-gradient-to-r from-teal-600 via-teal-500 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-extrabold shadow-2xl hover:shadow-teal-500/40 hover:scale-105 active:scale-95 transition-all group border-2 border-white/30 backdrop-blur-lg"
+        title="Abrir Agente de IA LBSA (Canto Inferior Direito)"
       >
         <Sparkles className="h-5 w-5 animate-pulse text-amber-300" />
         <span className="text-xs tracking-wide">Agente LBSA IA</span>
