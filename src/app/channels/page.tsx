@@ -19,11 +19,13 @@ import { useToast } from "@/contexts/ToastContext";
 import Smooth3DSlideshow, { Slide } from "@/components/ui/Smooth3DSlideshow";
 import { colecoesToSlides } from "@/lib/slideAdapters";
 
+import { useAuth } from "@/contexts/AuthContext";
+
 export default function ChannelsPage() {
   const router = useRouter();
   const toast = useToast();
+  const { user: authUser, isLoading: authLoading } = useAuth();
   const [colecoes, setColecoes] = useState<Colecao[]>([]);
-  const [currentUser, setCurrentUser] = useState<UserWithoutPassword | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,6 +35,8 @@ export default function ChannelsPage() {
   const [activeColecaoFromSlide, setActiveColecaoFromSlide] = useState<Colecao | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("");
   const [viewMode, setViewMode] = useState<"cards" | "coverflow" | "table">("cards");
+
+  const currentUser = authUser;
 
   // Form state
   const [formData, setFormData] = useState({
@@ -57,18 +61,13 @@ export default function ChannelsPage() {
   });
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const res = await fetch("/api/auth/check");
-      if (!res.ok) {
-        router.replace("/login");
-        return false;
-      }
-      const data = await res.json();
-      setCurrentUser(data.user);
-      return true;
-    };
-    checkAuth().then((ok) => { if (ok !== false) fetchColecoes(); });
-  }, [router]);
+    if (authLoading) return;
+    if (!authUser) {
+      router.replace("/login");
+      return;
+    }
+    fetchColecoes();
+  }, [authUser, authLoading, router]);
 
   const fetchColecoes = async () => {
     try {

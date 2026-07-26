@@ -19,11 +19,13 @@ import { useToast } from "@/contexts/ToastContext";
 import Smooth3DSlideshow, { Slide } from "@/components/ui/Smooth3DSlideshow";
 import { materiaisToSlides } from "@/lib/slideAdapters";
 
+import { useAuth } from "@/contexts/AuthContext";
+
 export default function InsightsPage() {
   const router = useRouter();
   const toast = useToast();
+  const { user: authUser, isLoading: authLoading } = useAuth();
   const [materiais, setMateriais] = useState<Material[]>([]);
-  const [currentUser, setCurrentUser] = useState<UserWithoutPassword | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,6 +35,8 @@ export default function InsightsPage() {
   const [activeMaterialFromSlide, setActiveMaterialFromSlide] = useState<Material | null>(null);
   const [filterEstado, setFilterEstado] = useState<string>("");
   const [viewMode, setViewMode] = useState<"cards" | "coverflow" | "table">("cards");
+
+  const currentUser = authUser;
 
   // Form state
   const [formData, setFormData] = useState({
@@ -45,18 +49,13 @@ export default function InsightsPage() {
   });
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const res = await fetch("/api/auth/check");
-      if (!res.ok) {
-        router.replace("/login");
-        return false;
-      }
-      const data = await res.json();
-      setCurrentUser(data.user);
-      return true;
-    };
-    checkAuth().then((ok) => { if (ok !== false) fetchMateriais(); });
-  }, [router]);
+    if (authLoading) return;
+    if (!authUser) {
+      router.replace("/login");
+      return;
+    }
+    fetchMateriais();
+  }, [authUser, authLoading, router]);
 
   const fetchMateriais = async () => {
     try {
