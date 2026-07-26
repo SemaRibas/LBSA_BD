@@ -336,6 +336,13 @@ export default function ChannelsPage() {
       <main className="lg:ml-20 p-4 sm:p-6 lg:p-8">
         <Header title="Coleções" activeTab="Channels" />
 
+        {/* Mobile Page Title */}
+        <div className="lg:hidden mb-4 animate-fade-in">
+          <h1 className="text-xl sm:text-2xl font-black text-surface-900 dark:text-surface-100 uppercase tracking-wider">
+            Coleções
+          </h1>
+        </div>
+
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
           <Card className="animate-slide-up">
@@ -364,7 +371,7 @@ export default function ChannelsPage() {
 
         {/* Controls, Filters & View Toggle */}
         <Card className="mb-6 animate-slide-up" style={{ animationDelay: "400ms" }}>
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4">
             <div className="flex-1 w-full flex flex-col sm:flex-row gap-3">
               <div className="flex-1">
                 <Input
@@ -389,13 +396,13 @@ export default function ChannelsPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full xl:w-auto">
               {/* Mode Selector */}
-              <div className="flex items-center bg-surface-100 dark:bg-surface-800 p-1 rounded-lg border border-surface-200 dark:border-surface-700">
+              <div className="flex items-center justify-center bg-surface-100 dark:bg-surface-800 p-1 rounded-xl border border-surface-200 dark:border-surface-700 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setViewMode("cards")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                  className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                     viewMode === "cards"
                       ? "bg-teal-600 text-white shadow-md"
                       : "text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white"
@@ -407,7 +414,7 @@ export default function ChannelsPage() {
                 <button
                   type="button"
                   onClick={() => setViewMode("coverflow")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                  className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                     viewMode === "coverflow"
                       ? "bg-teal-600 text-white shadow-md"
                       : "text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white"
@@ -419,7 +426,7 @@ export default function ChannelsPage() {
                 <button
                   type="button"
                   onClick={() => setViewMode("table")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                  className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                     viewMode === "table"
                       ? "bg-teal-600 text-white shadow-md"
                       : "text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white"
@@ -430,18 +437,21 @@ export default function ChannelsPage() {
                 </button>
               </div>
 
-              <Button variant="outline" onClick={() => setIsImportModalOpen(true)} size="sm">
-                <Upload className="h-4 w-4 mr-1.5" />
-                Importar Excel
-              </Button>
-              <Button variant="outline" onClick={() => setIsExportModalOpen(true)} size="sm">
-                <Download className="h-4 w-4 mr-1.5" />
-                Exportar
-              </Button>
-              <Button onClick={handleNew} size="sm">
-                <Plus className="h-4 w-4 mr-1.5" />
-                Nova Coleção
-              </Button>
+              {/* Action Buttons Grid on Mobile */}
+              <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+                <Button variant="outline" onClick={() => setIsImportModalOpen(true)} size="sm" className="w-full justify-center">
+                  <Upload className="h-4 w-4 mr-1.5 shrink-0" />
+                  <span className="truncate">Importar</span>
+                </Button>
+                <Button variant="outline" onClick={() => setIsExportModalOpen(true)} size="sm" className="w-full justify-center">
+                  <Download className="h-4 w-4 mr-1.5 shrink-0" />
+                  <span className="truncate">Exportar</span>
+                </Button>
+                <Button onClick={handleNew} size="sm" className="col-span-2 sm:col-span-1 w-full justify-center">
+                  <Plus className="h-4 w-4 mr-1.5 shrink-0" />
+                  <span className="truncate">Nova Coleção</span>
+                </Button>
+              </div>
             </div>
           </div>
         </Card>

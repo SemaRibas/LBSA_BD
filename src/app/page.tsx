@@ -249,6 +249,13 @@ export default function DashboardPage() {
       <main className="lg:ml-20 p-4 sm:p-6 lg:p-8">
         <Header title="Dashboard" activeTab="Insights" />
 
+        {/* Mobile Page Title */}
+        <div className="lg:hidden mb-4 animate-fade-in">
+          <h1 className="text-xl sm:text-2xl font-black text-surface-900 dark:text-surface-100 uppercase tracking-wider">
+            Dashboard
+          </h1>
+        </div>
+
         {/* Electric Hero Logo Banner */}
         <div className="mb-8 animate-slide-up overflow-hidden max-w-full rounded-[28px]">
           <ElectricBorder

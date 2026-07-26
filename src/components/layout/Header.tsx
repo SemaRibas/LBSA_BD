@@ -126,7 +126,7 @@ export function Header({ title, className }: HeaderProps) {
           <Menu className="h-5 w-5" />
         </button>
 
-        <h1 className="text-sm xs:text-base sm:text-2xl font-black text-surface-900 dark:text-surface-100 uppercase tracking-wider truncate">
+        <h1 className="hidden lg:block text-lg sm:text-2xl font-black text-surface-900 dark:text-surface-100 uppercase tracking-wider truncate">
           {title}
         </h1>
       </div>
