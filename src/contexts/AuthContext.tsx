@@ -17,23 +17,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserWithoutPassword | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Mark presence active in localStorage and dispatch presence event
+  const updatePresence = (usr: UserWithoutPassword | null, isOnline: boolean) => {
+    if (typeof window === "undefined") return;
+    try {
+      if (isOnline && usr?.id) {
+        localStorage.setItem(`lbsa_online_${usr.id}`, JSON.stringify({ ...usr, lastSeen: Date.now() }));
+        localStorage.setItem("lbsa_presence_event", JSON.stringify({ type: "login", userId: usr.id, time: Date.now() }));
+      } else if (usr?.id) {
+        localStorage.removeItem(`lbsa_online_${usr.id}`);
+        localStorage.setItem("lbsa_presence_event", JSON.stringify({ type: "logout", userId: usr.id, time: Date.now() }));
+      }
+      window.dispatchEvent(new CustomEvent("lbsa_presence_update", { detail: { user: usr, isOnline } }));
+    } catch {
+      // Ignore storage errors
+    }
+  };
+
   useEffect(() => {
-    // Verificar se ha usuario logado no cookie
     const checkAuth = async () => {
       try {
         const res = await fetch("/api/auth/check");
         if (res.ok) {
           const data = await res.json();
           setUser(data.user);
+          updatePresence(data.user, true);
+        } else {
+          setUser(null);
         }
       } catch {
-        // Ignorar erro
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
     };
     checkAuth();
   }, []);
+
+  // Heartbeat to keep presence active while browser tab is open
+  useEffect(() => {
+    if (!user) return;
+    updatePresence(user, true);
+    const interval = setInterval(() => {
+      updatePresence(user, true);
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
@@ -46,6 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (res.ok) {
         const userData = await res.json();
         setUser(userData);
+        updatePresence(userData, true);
         return true;
       }
       return false;
@@ -62,13 +92,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ name, email, password }),
       });
 
-      return res.ok;
+      if (res.ok) {
+        const userData = await res.json();
+        setUser(userData);
+        updatePresence(userData, true);
+        return true;
+      }
+      return false;
     } catch {
       return false;
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    if (user) {
+      updatePresence(user, false);
+    }
+    await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
     document.cookie = "lbsa_user=; path=/; max-age=0";
     setUser(null);
     window.location.href = "/login";

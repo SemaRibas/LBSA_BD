@@ -28,7 +28,7 @@ export interface UserCursorProps {
 
 export default function UserCursor(props: UserCursorProps) {
     const { user } = useAuth();
-    const userName = props.name || user?.name || "Pesquisador LBSA";
+    const userName = props.name || (user?.name ? user.name : "user");
 
     const {
         color = "#0d9488",

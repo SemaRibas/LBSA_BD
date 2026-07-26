@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { LogOut, User as UserIcon, Users, ChevronDown, Shield, Eye, Microscope, Circle } from "lucide-react";
+import { LogOut, User as UserIcon, Users, ChevronDown, Shield, Eye, Microscope } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserWithoutPassword, UserRole } from "@/types";
 import { getFirstAndSurnameInitials } from "@/lib/userUtils";
@@ -18,6 +18,7 @@ export function Header({ title, className }: HeaderProps) {
   const { user, logout } = useAuth();
   const [allUsers, setAllUsers] = useState<UserWithoutPassword[]>([]);
   const [presenceOpen, setPresenceOpen] = useState(false);
+  const [presenceTick, setPresenceTick] = useState(0);
 
   // Fetch team users to compute presence status
   useEffect(() => {
@@ -33,12 +34,22 @@ export function Header({ title, className }: HeaderProps) {
       }
     };
     fetchUsers();
-    const interval = setInterval(fetchUsers, 30000);
+    const interval = setInterval(fetchUsers, 15000);
     return () => clearInterval(interval);
   }, []);
 
-  // Compute online vs offline users
-  // The logged in user is always online. Others with index % 2 === 0 or admin role are marked online for demo presence
+  // Listen to real-time presence updates & storage events
+  useEffect(() => {
+    const handlePresenceEvent = () => setPresenceTick((t) => t + 1);
+    window.addEventListener("lbsa_presence_update", handlePresenceEvent);
+    window.addEventListener("storage", handlePresenceEvent);
+    return () => {
+      window.removeEventListener("lbsa_presence_update", handlePresenceEvent);
+      window.removeEventListener("storage", handlePresenceEvent);
+    };
+  }, []);
+
+  // Compute online vs offline users in real-time
   const presenceData = useMemo(() => {
     const defaultTeam: UserWithoutPassword[] = [
       { id: "1", name: "Dra. Sophia Benett", email: "sophia.benett@uesb.edu.br", role: "admin", createdAt: "" },
@@ -54,10 +65,25 @@ export function Header({ title, className }: HeaderProps) {
     const online: UserWithoutPassword[] = [];
     const offline: UserWithoutPassword[] = [];
 
-    list.forEach((u, idx) => {
+    list.forEach((u) => {
       const isMe = user?.id === u.id || (user?.email && user.email === u.email);
-      // Mark current user as online, plus active members
-      if (isMe || idx === 0 || idx === 1 || idx === 3) {
+
+      // Real-time local presence check
+      let isStoredOnline = false;
+      if (typeof window !== "undefined") {
+        const raw = localStorage.getItem(`lbsa_online_${u.id}`);
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw);
+            if (parsed?.lastSeen && Date.now() - parsed.lastSeen < 45000) {
+              isStoredOnline = true;
+            }
+          } catch {}
+        }
+      }
+
+      // If user is currently logged in, or has active heartbeat -> Online. Otherwise Offline.
+      if ((isMe && user) || isStoredOnline) {
         online.push(u);
       } else {
         offline.push(u);
@@ -65,7 +91,7 @@ export function Header({ title, className }: HeaderProps) {
     });
 
     return { online, offline, total: list.length };
-  }, [allUsers, user]);
+  }, [allUsers, user, presenceTick]);
 
   const getRoleIcon = (role?: UserRole) => {
     switch (role) {
@@ -95,7 +121,7 @@ export function Header({ title, className }: HeaderProps) {
         </h1>
       </div>
 
-      {/* Right Area: Presence Indicator & User Account */}
+      {/* Right Area: Real-Time Presence & User Account */}
       <div className="flex items-center gap-2.5 self-end sm:self-center max-w-full flex-wrap">
         {/* Presence Status Widget Button */}
         <div className="relative">
@@ -103,7 +129,7 @@ export function Header({ title, className }: HeaderProps) {
             type="button"
             onClick={() => setPresenceOpen(!presenceOpen)}
             className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-white dark:bg-surface-800/90 border border-surface-200/80 dark:border-surface-700/80 text-xs font-bold text-surface-800 dark:text-surface-200 hover:border-teal-500/50 shadow-2xs backdrop-blur-md transition-all active:scale-95"
-            title="Ver integrantes online e offline"
+            title="Ver integrantes online e offline em tempo real"
           >
             {/* Pulsing Green Online Indicator */}
             <div className="relative flex items-center justify-center">
@@ -144,53 +170,57 @@ export function Header({ title, className }: HeaderProps) {
                   <div className="flex items-center justify-between px-2 text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                     <span>🟢 Online Agora ({presenceData.online.length})</span>
                   </div>
-                  {presenceData.online.map((member) => {
-                    const isMe = user?.id === member.id || user?.email === member.email;
-                    const initials = getFirstAndSurnameInitials(member.name);
-                    return (
-                      <div
-                        key={member.id}
-                        className="flex items-center justify-between p-2 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-900/30 text-xs"
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="relative shrink-0">
-                            {member.imagemUrl ? (
-                              <img
-                                src={member.imagemUrl}
-                                alt={member.name}
-                                className="w-8 h-8 rounded-xl object-cover border border-emerald-400/40"
-                              />
-                            ) : (
-                              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-700 text-white font-black flex items-center justify-center text-xs">
-                                {initials}
-                              </div>
-                            )}
-                            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-surface-900" />
-                          </div>
-
-                          <div className="flex flex-col min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-extrabold text-surface-900 dark:text-white truncate">
-                                {member.name}
-                              </span>
-                              {isMe && (
-                                <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded bg-teal-600 text-white">
-                                  Você
-                                </span>
+                  {presenceData.online.length === 0 ? (
+                    <div className="p-2 text-xs text-surface-400 italic text-center">Nenhum integrante online no momento.</div>
+                  ) : (
+                    presenceData.online.map((member) => {
+                      const isMe = user?.id === member.id || user?.email === member.email;
+                      const initials = getFirstAndSurnameInitials(member.name);
+                      return (
+                        <div
+                          key={member.id}
+                          className="flex items-center justify-between p-2 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-900/30 text-xs"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="relative shrink-0">
+                              {member.imagemUrl ? (
+                                <img
+                                  src={member.imagemUrl}
+                                  alt={member.name}
+                                  className="w-8 h-8 rounded-xl object-cover border border-emerald-400/40"
+                                />
+                              ) : (
+                                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-700 text-white font-black flex items-center justify-center text-xs">
+                                  {initials}
+                                </div>
                               )}
+                              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-surface-900" />
                             </div>
-                            <span className="text-[10px] text-surface-500 dark:text-surface-400 truncate">
-                              {member.email}
-                            </span>
+
+                            <div className="flex flex-col min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-extrabold text-surface-900 dark:text-white truncate">
+                                  {member.name}
+                                </span>
+                                {isMe && (
+                                  <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded bg-teal-600 text-white">
+                                    Você
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-surface-500 dark:text-surface-400 truncate">
+                                {member.email}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="shrink-0 p-1 rounded-lg bg-white/80 dark:bg-surface-800 shadow-2xs">
+                            {getRoleIcon(member.role)}
                           </div>
                         </div>
-
-                        <div className="shrink-0 p-1 rounded-lg bg-white/80 dark:bg-surface-800 shadow-2xs">
-                          {getRoleIcon(member.role)}
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                 </div>
 
                 {/* Section 2: Offline Members */}
