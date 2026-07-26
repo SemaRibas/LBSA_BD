@@ -507,9 +507,32 @@ function ProfileImageModal({ user, isSaving, onClose, onSave }: ProfileModalProp
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      const base64 = reader.result as string;
-      setSelectedPreview(base64);
-      setImageUrlInput(base64);
+      const rawResult = reader.result as string;
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const size = 300;
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          const minDim = Math.min(img.width, img.height);
+          const sx = (img.width - minDim) / 2;
+          const sy = (img.height - minDim) / 2;
+          ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+          const compressedBase64 = canvas.toDataURL("image/jpeg", 0.85);
+          setSelectedPreview(compressedBase64);
+          setImageUrlInput(compressedBase64);
+        } else {
+          setSelectedPreview(rawResult);
+          setImageUrlInput(rawResult);
+        }
+      };
+      img.onerror = () => {
+        setSelectedPreview(rawResult);
+        setImageUrlInput(rawResult);
+      };
+      img.src = rawResult;
     };
     reader.readAsDataURL(file);
   };
