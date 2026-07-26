@@ -13,9 +13,33 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const SESSION_KEY = "lbsa_session_user";
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserWithoutPassword | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Helper to save session in sessionStorage (persists across F5 page reloads, cleared when tab closes)
+  const saveSessionUser = (usr: UserWithoutPassword | null) => {
+    if (typeof window === "undefined") return;
+    try {
+      if (usr) {
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify(usr));
+      } else {
+        sessionStorage.removeItem(SESSION_KEY);
+      }
+    } catch {}
+  };
+
+  const getSessionUser = (): UserWithoutPassword | null => {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = sessionStorage.getItem(SESSION_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  };
 
   // Mark presence active in localStorage and dispatch presence event
   const updatePresence = (usr: UserWithoutPassword | null, isOnline: boolean) => {
@@ -36,23 +60,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const checkAuth = async () => {
+      // 1. First check sessionStorage (instant recovery on F5 / page reload)
+      const cachedUser = getSessionUser();
+      if (cachedUser) {
+        setUser(cachedUser);
+        updatePresence(cachedUser, true);
+        setIsLoading(false);
+      }
+
+      // 2. Verify with API cookie check in background
       try {
         const res = await fetch("/api/auth/check");
         if (res.ok) {
           const data = await res.json();
-          setUser(data.user);
-          updatePresence(data.user, true);
-        } else {
+          if (data?.user) {
+            setUser(data.user);
+            saveSessionUser(data.user);
+            updatePresence(data.user, true);
+          }
+        } else if (!cachedUser) {
           setUser(null);
+          removeSessionUser();
         }
       } catch {
-        setUser(null);
+        if (!cachedUser) {
+          setUser(null);
+        }
       } finally {
         setIsLoading(false);
       }
     };
+
     checkAuth();
   }, []);
+
+  const removeSessionUser = () => {
+    if (typeof window === "undefined") return;
+    try {
+      sessionStorage.removeItem(SESSION_KEY);
+    } catch {}
+  };
 
   // Heartbeat to keep presence active while browser tab is open
   useEffect(() => {
@@ -75,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (res.ok) {
         const userData = await res.json();
         setUser(userData);
+        saveSessionUser(userData);
         updatePresence(userData, true);
         return true;
       }
@@ -95,6 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (res.ok) {
         const userData = await res.json();
         setUser(userData);
+        saveSessionUser(userData);
         updatePresence(userData, true);
         return true;
       }
@@ -108,8 +157,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) {
       updatePresence(user, false);
     }
+    removeSessionUser();
     await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
-    document.cookie = "lbsa_user=; path=/; max-age=0";
+    document.cookie = "lbsa_user=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     setUser(null);
     window.location.href = "/login";
   };
