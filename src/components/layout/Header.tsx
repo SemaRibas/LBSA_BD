@@ -19,6 +19,11 @@ export function Header({ title, className }: HeaderProps) {
   const [allUsers, setAllUsers] = useState<UserWithoutPassword[]>([]);
   const [presenceOpen, setPresenceOpen] = useState(false);
   const [presenceTick, setPresenceTick] = useState(0);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch team users to compute presence status
   useEffect(() => {
@@ -68,9 +73,9 @@ export function Header({ title, className }: HeaderProps) {
     list.forEach((u) => {
       const isMe = user?.id === u.id || (user?.email && user.email === u.email);
 
-      // Real-time local presence check
+      // Real-time local presence check (only active after client mount to prevent SSR hydration mismatch)
       let isStoredOnline = false;
-      if (typeof window !== "undefined") {
+      if (mounted && typeof window !== "undefined") {
         const raw = localStorage.getItem(`lbsa_online_${u.id}`);
         if (raw) {
           try {
@@ -91,7 +96,7 @@ export function Header({ title, className }: HeaderProps) {
     });
 
     return { online, offline, total: list.length };
-  }, [allUsers, user, presenceTick]);
+  }, [allUsers, user, presenceTick, mounted]);
 
   const getRoleIcon = (role?: UserRole) => {
     switch (role) {
