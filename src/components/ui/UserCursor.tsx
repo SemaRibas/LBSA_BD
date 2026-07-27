@@ -183,10 +183,16 @@ export default function UserCursor(props: UserCursorProps) {
         };
     }, [isTouchDevice, offsetX, offsetY, mouseX, mouseY, labelTiltTarget, labelTiltStrength]);
 
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const labelTranslateX = useTransform(labelX, (v) => v + labelOffsetX);
     const labelTranslateY = useTransform(labelY, (v) => v + labelOffsetY);
 
-    if (isTouchDevice) return null;
+    if (!mounted || isTouchDevice) return null;
 
     return (
         <div

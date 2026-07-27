@@ -53,16 +53,7 @@ const Sidebar = ({ className }: SidebarProps) => {
     document.documentElement.classList.toggle("dark", newIsDark);
   };
 
-  if (!mounted) {
-    return (
-      <aside className={cn(
-        "fixed left-0 top-0 h-full w-20 bg-gradient-to-b from-teal-700 to-teal-800",
-        "flex flex-col items-center py-6 z-40",
-        "lg:translate-x-0 -translate-x-full",
-        className
-      )} />
-    );
-  }
+
 
   return (
     <>
