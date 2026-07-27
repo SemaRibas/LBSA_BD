@@ -371,8 +371,9 @@ export default function ChannelsPage() {
 
         {/* Controls, Filters & View Toggle */}
         <Card className="mb-6 animate-slide-up" style={{ animationDelay: "400ms" }}>
-          <div className="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4">
-            <div className="flex-1 w-full flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-3.5 sm:gap-4">
+            {/* Search & Filter Group */}
+            <div className="flex-1 w-full flex flex-col sm:flex-row gap-2.5 sm:gap-3">
               <div className="flex-1">
                 <Input
                   placeholder="Buscar por tombo ou identificação..."
@@ -385,7 +386,7 @@ export default function ChannelsPage() {
                 <Select
                   placeholder="Filtrar por status"
                   options={[
-                    { value: "", label: "Todos" },
+                    { value: "", label: "Todos os status" },
                     { value: "LIQUIDO_TURVO", label: "Líquido Turvo" },
                     { value: "TRANSPARENTE", label: "Transparente" },
                     { value: "SECO", label: "Seco" },
@@ -396,60 +397,63 @@ export default function ChannelsPage() {
               </div>
             </div>
 
+            {/* View Mode Selector & Action Buttons */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full xl:w-auto">
               {/* Mode Selector */}
-              <div className="flex items-center justify-center bg-surface-100 dark:bg-surface-800 p-1 rounded-xl border border-surface-200 dark:border-surface-700 w-full sm:w-auto">
+              <div className="grid grid-cols-3 sm:flex items-center justify-center bg-surface-100/90 dark:bg-surface-800/90 p-1 rounded-2xl border border-surface-200/80 dark:border-surface-700/80 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setViewMode("cards")}
-                  className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                  className={`flex items-center justify-center gap-1.5 px-2 xs:px-3 py-2 sm:py-1.5 text-[11px] xs:text-xs font-bold rounded-xl transition-all whitespace-nowrap ${
                     viewMode === "cards"
-                      ? "bg-teal-600 text-white shadow-md"
+                      ? "bg-teal-600 text-white shadow-sm"
                       : "text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white"
                   }`}
                 >
-                  <LayoutGrid className="h-3.5 w-3.5" />
-                  Cards
+                  <LayoutGrid className="h-3.5 w-3.5 shrink-0" />
+                  <span>Cards</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setViewMode("coverflow")}
-                  className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                  className={`flex items-center justify-center gap-1.5 px-2 xs:px-3 py-2 sm:py-1.5 text-[11px] xs:text-xs font-bold rounded-xl transition-all whitespace-nowrap ${
                     viewMode === "coverflow"
-                      ? "bg-teal-600 text-white shadow-md"
+                      ? "bg-teal-600 text-white shadow-sm"
                       : "text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white"
                   }`}
                 >
-                  <Layers className="h-3.5 w-3.5" />
-                  Carrossel 3D
+                  <Layers className="h-3.5 w-3.5 shrink-0" />
+                  <span>Carrossel 3D</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setViewMode("table")}
-                  className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                  className={`flex items-center justify-center gap-1.5 px-2 xs:px-3 py-2 sm:py-1.5 text-[11px] xs:text-xs font-bold rounded-xl transition-all whitespace-nowrap ${
                     viewMode === "table"
-                      ? "bg-teal-600 text-white shadow-md"
+                      ? "bg-teal-600 text-white shadow-sm"
                       : "text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white"
                   }`}
                 >
-                  <TableIcon className="h-3.5 w-3.5" />
-                  Tabela
+                  <TableIcon className="h-3.5 w-3.5 shrink-0" />
+                  <span>Tabela</span>
                 </button>
               </div>
 
               {/* Action Buttons Grid on Mobile */}
-              <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
-                <Button variant="outline" onClick={() => setIsImportModalOpen(true)} size="sm" className="w-full justify-center">
-                  <Upload className="h-4 w-4 mr-1.5 shrink-0" />
-                  <span className="truncate">Importar</span>
-                </Button>
-                <Button variant="outline" onClick={() => setIsExportModalOpen(true)} size="sm" className="w-full justify-center">
-                  <Download className="h-4 w-4 mr-1.5 shrink-0" />
-                  <span className="truncate">Exportar</span>
-                </Button>
-                <Button onClick={handleNew} size="sm" className="col-span-2 sm:col-span-1 w-full justify-center">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
+                  <Button variant="outline" onClick={() => setIsImportModalOpen(true)} size="sm" className="w-full justify-center h-10 sm:h-9 font-semibold">
+                    <Upload className="h-4 w-4 mr-1.5 shrink-0" />
+                    <span className="truncate">Importar</span>
+                  </Button>
+                  <Button variant="outline" onClick={() => setIsExportModalOpen(true)} size="sm" className="w-full justify-center h-10 sm:h-9 font-semibold">
+                    <Download className="h-4 w-4 mr-1.5 shrink-0" />
+                    <span className="truncate">Exportar</span>
+                  </Button>
+                </div>
+                <Button onClick={handleNew} size="sm" className="w-full sm:w-auto justify-center h-10.5 sm:h-9 font-bold shadow-sm">
                   <Plus className="h-4 w-4 mr-1.5 shrink-0" />
-                  <span className="truncate">Nova Coleção</span>
+                  <span className="whitespace-nowrap">Nova Coleção</span>
                 </Button>
               </div>
             </div>
