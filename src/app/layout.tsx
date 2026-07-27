@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ToastProvider } from "@/contexts/ToastContext";
+import ClientShell from "@/components/layout/ClientShell";
 
 export const metadata: Metadata = {
   title: "LBSA - Laboratório de Sistemática Animal",
@@ -13,9 +14,6 @@ export const metadata: Metadata = {
     apple: "/logo_black.png",
   },
 };
-
-import UserCursor from "@/components/ui/UserCursor";
-import GlobalAIAgent from "@/components/ui/GlobalAIAgent";
 
 export default function RootLayout({
   children,
@@ -47,12 +45,12 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased">
+      <body className="antialiased" suppressHydrationWarning>
         <ToastProvider>
           <AuthProvider>
-            <UserCursor />
-            {children}
-            <GlobalAIAgent />
+            <ClientShell>
+              {children}
+            </ClientShell>
           </AuthProvider>
         </ToastProvider>
       </body>
