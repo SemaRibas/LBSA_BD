@@ -110,7 +110,7 @@ export function Header({ title, className }: HeaderProps) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 w-full bg-surface-50/90 dark:bg-surface-950/90 backdrop-blur-md py-2.5 px-3 sm:px-4 mb-4 sm:mb-6 border-b border-surface-200/60 dark:border-surface-800/60 transition-all duration-200 flex flex-row items-center justify-between gap-2 sm:gap-3 shadow-2xs",
+        "sticky top-0 z-40 w-[calc(100%+2rem)] sm:w-full -mt-4 -mx-4 sm:mt-0 sm:mx-0 bg-surface-50/90 dark:bg-surface-950/90 backdrop-blur-md py-2.5 px-3.5 sm:px-4 mb-4 sm:mb-6 border-b border-surface-200/60 dark:border-surface-800/60 transition-all duration-200 flex flex-row items-center justify-between gap-2 sm:gap-3 shadow-2xs",
         className
       )}
     >
