@@ -121,12 +121,9 @@ export function Header({ title, className }: HeaderProps) {
         </h1>
 
         {/* Mobile Header Brand */}
-        <div className="lg:hidden flex items-center gap-2 py-0.5">
-          <img src="/logo_black.png" alt="LBSA Logo" className="h-7 w-auto dark:hidden" />
-          <img src="/logo_white.png" alt="LBSA Logo" className="h-7 w-auto hidden dark:block" />
-          <span className="text-xs font-black text-teal-800 dark:text-teal-300 tracking-wider uppercase">
-            LBSA
-          </span>
+        <div className="lg:hidden flex items-center py-0.5">
+          <img src="/logo_black.png" alt="LBSA Logo" className="h-9.5 sm:h-10 w-auto object-contain dark:hidden" />
+          <img src="/logo_white.png" alt="LBSA Logo" className="h-9.5 sm:h-10 w-auto object-contain hidden dark:block" />
         </div>
       </div>
 
