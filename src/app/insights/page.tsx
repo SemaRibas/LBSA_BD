@@ -268,13 +268,7 @@ export default function InsightsPage() {
 
   const currentItem = activeMaterialFromSlide || (filteredMateriais.length > 0 ? filteredMateriais[0] : null);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-surface-50 dark:bg-surface-950 flex items-center justify-center">
-        <div className="animate-pulse text-surface-600">Carregando materiais...</div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen bg-surface-50 dark:bg-surface-950">

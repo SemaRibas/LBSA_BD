@@ -321,13 +321,7 @@ export default function ChannelsPage() {
 
   const currentItem = activeColecaoFromSlide || (filteredColecoes.length > 0 ? filteredColecoes[0] : null);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-surface-50 dark:bg-surface-950 flex items-center justify-center">
-        <div className="animate-pulse text-surface-600">Carregando coleções...</div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen bg-surface-50 dark:bg-surface-950">

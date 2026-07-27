@@ -138,17 +138,25 @@ const Sidebar = ({ className }: SidebarProps) => {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={true}
                 className={cn(
-                  "w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200",
+                  "w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-200",
                   "group relative",
                   isActive
-                    ? "bg-white text-teal-700 shadow-lg"
-                    : "text-teal-200 hover:bg-teal-600 hover:text-white"
+                    ? "text-teal-700 font-bold"
+                    : "text-teal-200 hover:bg-teal-600/50 hover:text-white"
                 )}
               >
-                <item.icon className="h-5 w-5" />
+                {isActive && (
+                  <motion.div
+                    layoutId="activeDesktopTabPill"
+                    className="absolute inset-0 bg-white rounded-xl shadow-lg"
+                    transition={{ type: "spring", stiffness: 380, damping: 28 }}
+                  />
+                )}
+                <item.icon className="h-5 w-5 relative z-10" />
                 {/* Tooltip */}
-                <span className="absolute left-full ml-3 px-2 py-1 bg-surface-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                <span className="absolute left-full ml-3 px-2 py-1 bg-surface-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-20">
                   {item.label}
                 </span>
               </Link>

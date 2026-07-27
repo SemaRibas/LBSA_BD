@@ -234,13 +234,7 @@ export default function DashboardPage() {
 
   const slides = galleryMode === "colecoes" ? colecoesToSlides(colecoes) : materiaisToSlides(materiais);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-surface-50 dark:bg-surface-950 flex items-center justify-center">
-        <div className="animate-pulse text-surface-600 font-medium">Carregando dados do laboratório...</div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen bg-surface-50 dark:bg-surface-950">
