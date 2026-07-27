@@ -7,17 +7,21 @@ import {
   LayoutDashboard,
   Package,
   Archive,
+  Home,
+  LayoutGrid,
+  BarChart3,
   Moon,
   Sun,
   Menu,
   X,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/insights", label: "Inventários", icon: Package },
-  { href: "/channels", label: "Coleções", icon: Archive },
+  { href: "/", label: "Dashboard", icon: Home },
+  { href: "/insights", label: "Inventários", icon: LayoutGrid },
+  { href: "/channels", label: "Coleções", icon: BarChart3 },
 ];
 
 interface SidebarProps {
@@ -62,23 +66,34 @@ const Sidebar = ({ className }: SidebarProps) => {
 
   return (
     <>
-      {/* Mobile Bottom Navigation Bar */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-surface-900/95 backdrop-blur-md border-t border-surface-200/80 dark:border-surface-800/80 px-2 py-1.5 flex items-center justify-around shadow-2xl">
+      {/* Mobile Bottom Floating Capsule Navigation Bar */}
+      <nav className="lg:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-xs sm:max-w-sm bg-surface-950/95 dark:bg-surface-950/95 backdrop-blur-xl border border-white/15 dark:border-surface-800/80 p-1.5 rounded-full flex items-center justify-between shadow-2xl">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={cn(
-                "flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all duration-200 min-w-[64px]",
-                isActive
-                  ? "text-teal-600 dark:text-teal-400 font-black scale-105 bg-teal-50 dark:bg-teal-950/40"
-                  : "text-surface-500 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white font-medium"
-              )}
+              className="relative flex items-center justify-center p-2.5 rounded-full transition-colors flex-1"
+              title={item.label}
             >
-              <item.icon className="h-5 w-5" />
-              <span className="text-[10px] tracking-tight">{item.label}</span>
+              {isActive && (
+                <motion.div
+                  layoutId="activeMobileTabPill"
+                  className="absolute inset-0 bg-white dark:bg-teal-500 rounded-full shadow-md"
+                  transition={{ type: "spring", stiffness: 380, damping: 28 }}
+                />
+              )}
+              <div className="relative z-10 flex items-center justify-center">
+                <item.icon
+                  className={cn(
+                    "h-5 w-5 transition-colors duration-200",
+                    isActive
+                      ? "text-surface-950 dark:text-white"
+                      : "text-surface-400 hover:text-white"
+                  )}
+                />
+              </div>
             </Link>
           );
         })}
@@ -86,12 +101,15 @@ const Sidebar = ({ className }: SidebarProps) => {
         {/* Theme Toggle Button */}
         <button
           onClick={toggleTheme}
-          className="flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-surface-500 dark:text-surface-400 hover:text-surface-900 dark:hover:text-white transition-all min-w-[64px]"
+          className="relative flex items-center justify-center p-2.5 rounded-full text-surface-400 hover:text-white transition-colors flex-1"
           aria-label="Alternar Tema"
           title="Alternar Tema Claro/Escuro"
         >
-          {isDark ? <Sun className="h-5 w-5 text-amber-400" /> : <Moon className="h-5 w-5" />}
-          <span className="text-[10px] tracking-tight">{isDark ? "Claro" : "Escuro"}</span>
+          {isDark ? (
+            <Sun className="h-5 w-5 text-amber-400" />
+          ) : (
+            <Moon className="h-5 w-5 text-surface-400 hover:text-white" />
+          )}
         </button>
       </nav>
 

@@ -120,10 +120,27 @@ export function Header({ title, className }: HeaderProps) {
           {title}
         </h1>
 
-        {/* Mobile Header Brand */}
-        <div className="lg:hidden flex items-center py-0.5">
-          <img src="/logo_black.png" alt="LBSA Logo" className="h-9.5 sm:h-10 w-auto object-contain dark:hidden" />
-          <img src="/logo_white.png" alt="LBSA Logo" className="h-9.5 sm:h-10 w-auto object-contain hidden dark:block" />
+        {/* Mobile Header: User Profile & Greeting (matching reference design) */}
+        <div className="lg:hidden flex items-center gap-2.5 min-w-0">
+          {user?.imagemUrl ? (
+            <img
+              src={user.imagemUrl}
+              alt={user.name || "Perfil"}
+              className="w-9.5 h-9.5 rounded-full object-cover border-2 border-teal-500/40 shadow-xs shrink-0"
+            />
+          ) : (
+            <div className="w-9.5 h-9.5 rounded-full bg-gradient-to-br from-teal-500 to-emerald-700 text-white flex items-center justify-center text-xs font-black shadow-md shrink-0 border border-white/20">
+              {userInitials}
+            </div>
+          )}
+          <div className="flex flex-col min-w-0 leading-tight">
+            <span className="text-xs font-black text-surface-900 dark:text-white truncate">
+              Olá, {user?.name ? user.name.split(" ")[0] : "Semaías"}
+            </span>
+            <span className="text-[10px] font-bold text-surface-500 dark:text-surface-400 truncate">
+              LBSA Acervo
+            </span>
+          </div>
         </div>
       </div>
 
