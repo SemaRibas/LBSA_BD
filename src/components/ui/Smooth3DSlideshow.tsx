@@ -185,9 +185,9 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
     }, []);
 
     const effectiveCardWidth = useMemo(() => {
-        if (winWidth <= 380) return Math.min(cardWidth, Math.max(200, winWidth - 90));
-        if (winWidth <= 480) return Math.min(cardWidth, Math.max(240, winWidth - 110));
-        if (winWidth <= 768) return Math.min(cardWidth, Math.max(280, winWidth - 130));
+        if (winWidth <= 380) return Math.min(cardWidth, Math.max(180, winWidth - 110));
+        if (winWidth <= 480) return Math.min(cardWidth, Math.max(210, winWidth - 120));
+        if (winWidth <= 768) return Math.min(cardWidth, Math.max(250, winWidth - 140));
         return cardWidth;
     }, [winWidth, cardWidth]);
 
@@ -198,10 +198,37 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
     }, [winWidth, cardHeight, effectiveCardWidth]);
 
     const effectiveGap = useMemo(() => {
-        if (winWidth <= 480) return 4;
-        if (winWidth <= 768) return 6;
+        if (winWidth <= 480) return 3.5;
+        if (winWidth <= 768) return 5.5;
         return gap;
     }, [winWidth, gap]);
+
+    // Mobile touch swipe gestures
+    const touchStartX = useRef<number | null>(null);
+    const touchEndX = useRef<number | null>(null);
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        touchStartX.current = e.touches[0].clientX;
+        touchEndX.current = e.touches[0].clientX;
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        touchEndX.current = e.touches[0].clientX;
+    };
+
+    const handleTouchEnd = () => {
+        if (touchStartX.current === null || touchEndX.current === null) return;
+        const diff = touchStartX.current - touchEndX.current;
+        if (Math.abs(diff) > 35) {
+            if (diff > 0) {
+                step(1); // Swipe left -> next
+            } else {
+                step(-1); // Swipe right -> prev
+            }
+        }
+        touchStartX.current = null;
+        touchEndX.current = null;
+    };
 
     useEffect(() => {
         setActive((a) => Math.max(0, Math.min(n - 1, a)))
@@ -293,8 +320,8 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
         ...(style || {}),
         position: "relative",
         width: "100%",
-        height: effectiveCardHeight + (winWidth <= 480 ? 45 : 70),
-        minWidth: 260,
+        height: effectiveCardHeight + (winWidth <= 480 ? 35 : 60),
+        minWidth: 240,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -311,7 +338,10 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
             role="group"
             aria-roledescription="carousel"
             onKeyDown={isStatic ? undefined : onKeyDown}
-            className="group relative focus:outline-none"
+            onTouchStart={isStatic ? undefined : handleTouchStart}
+            onTouchMove={isStatic ? undefined : handleTouchMove}
+            onTouchEnd={isStatic ? undefined : handleTouchEnd}
+            className="group relative focus:outline-none touch-pan-y"
         >
             <div
                 style={{
@@ -330,9 +360,10 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
                     const ax = Math.abs(rel)
                     const visible = ax <= MAX_VISIBLE
                     const isActive = rel === 0
-                    const sc = Math.max(0.4, 1 - ax * SCALE_STEP)
-                    const tx = rel * (effectiveGap * 18)
-                    const tz = -ax * DEPTH
+                    const scaleStepMultiplier = winWidth <= 480 ? 0.18 : SCALE_STEP
+                    const sc = Math.max(0.4, 1 - ax * scaleStepMultiplier)
+                    const tx = rel * (effectiveGap * (winWidth <= 480 ? 15 : 18))
+                    const tz = -ax * (winWidth <= 480 ? 180 : DEPTH)
                     const ry = -rel * tilt
                     const rz = rel * sideTilt
                     const src = slide.image?.src || ""
@@ -353,8 +384,8 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
                         cursor: isActive ? "default" : "pointer",
                         pointerEvents: visible && !isStatic ? "auto" : "none",
                         boxShadow: isActive
-                            ? "0 20px 40px -15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(20, 184, 166, 0.2)"
-                            : "0 10px 25px -10px rgba(0, 0, 0, 0.15)",
+                            ? "0 15px 35px -10px rgba(0, 0, 0, 0.3), 0 0 15px rgba(20, 184, 166, 0.25)"
+                            : "0 8px 20px -8px rgba(0, 0, 0, 0.15)",
                     }
 
                     return (
@@ -407,11 +438,11 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
                                     <div
                                         style={{
                                             position: "absolute",
-                                            left: padLeft,
-                                            right: padRight,
+                                            left: winWidth <= 480 ? 12 : padLeft,
+                                            right: winWidth <= 480 ? 12 : padRight,
                                             [isTop ? "top" : "bottom"]: isTop
-                                                ? padTop
-                                                : padBottom,
+                                                ? (winWidth <= 480 ? 12 : padTop)
+                                                : (winWidth <= 480 ? 12 : padBottom),
                                             textAlign: isRight
                                                 ? "right"
                                                 : "left",
@@ -419,14 +450,14 @@ export default function Smooth3DSlideshow(userProps: Smooth3DSlideshowProps) {
                                         }}
                                     >
                                         {slide.badge && (
-                                            <span className="inline-block px-2.5 py-1 mb-2 text-xs font-bold tracking-wider text-teal-700 dark:text-teal-300 bg-teal-100/90 dark:bg-teal-950/80 backdrop-blur-md rounded-full border border-teal-500/30 shadow-sm">
+                                            <span className="inline-block px-2 py-0.5 mb-1 text-[10px] xs:text-xs font-extrabold tracking-wider text-teal-700 dark:text-teal-300 bg-teal-100/90 dark:bg-teal-950/80 backdrop-blur-md rounded-full border border-teal-500/30 shadow-sm">
                                                 {slide.badge}
                                             </span>
                                         )}
                                         <span
                                             style={{
                                                 color: titleColor,
-                                                fontSize: winWidth <= 480 ? 15 : 22,
+                                                fontSize: winWidth <= 480 ? 13 : 20,
                                                 fontWeight: 700,
                                                 lineHeight: "1.2em",
                                                 letterSpacing: "-0.02em",
